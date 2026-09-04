@@ -182,29 +182,41 @@ standalone app window (own taskbar icon, no browser chrome).
 Click the toolbar icon for the same Profile / Chat / Sync tabs as the dashboard, in a popup.
 The real power is what it injects into other pages:
 
-- **On a known platform's edit page** (Naukri, Indeed, Wellfound): a **"🧠 Sync with Devcard"**
-  button appears, bottom-right. Click it to fill that page's form fields from your profile.
-  ⚠️ **Current state**: the field selectors for these are mostly unverified placeholders (see
-  `extension/README.md`) — they need to be checked against each site's real logged-in DOM
-  before they'll reliably work. This is the biggest gap right now.
-- **On any other site with a form** (LinkedIn included — it isn't a dedicated adapter, see
-  below — plus job applications, signup pages, anything): a **"🧠 Fill with Devcard"** button
-  appears if there's anything fillable. Click it and an AI call maps your profile onto
-  whatever fields it finds — no site-specific code needed, works anywhere. Password/OTP/
+- **On any site with a form** — any job application, LinkedIn, Naukri, Indeed, Wellfound,
+  a signup page, anything: a **"🧠 Fill with Devcard"** button appears if there's anything
+  fillable. Click it and an AI call maps your profile onto whatever fields it finds — no
+  site-specific code, no manually-maintained CSS selectors, works anywhere. Password/OTP/
   file/checkbox fields are never touched.
 
-**Why LinkedIn isn't a dedicated adapter**: it was dropped by request. It has no separate
-profile-edit URL (editing happens through per-section modal dialogs, not one form) and
-actively detects/bans extension-based automation, so it wasn't a good fit for the one-click,
-no-AI-call adapter model the other three use. It still works via the generic "🧠 Fill with
-Devcard" mapper above like any unknown site — that's an active, AI-assisted, one-click fill
-rather than passive automation, which is a somewhat lower-risk shape, but still: treat
-LinkedIn autofill carefully and don't rely on it for frequent/bulk use.
+**Why there's only one mechanism now**: this used to be two systems — hardcoded-selector
+adapters for Naukri/Indeed/Wellfound (fast, free, but needed someone to manually inspect each
+site's logged-in DOM and re-verify whenever the site redesigned) plus the AI mapper for
+everything else. Both dropped by request in favor of the AI mapper for every site uniformly —
+one code path, zero manual DOM work ever, at the cost of a small AI call per fill. Naukri/
+Indeed/Wellfound still get marked in the Sync status tab after a successful fill (by hostname,
+not by a dedicated adapter) — see `KNOWN_JOB_PLATFORMS` in `extension/entrypoints/content/
+index.ts`.
 
 **A safety note on autofill**, worth repeating: this reads your own profile and types it into
 fields on the page you're already logged into — no scraping, no third-party data sharing
-except the AI provider call for the generic mapper. Naukri/Indeed/Wellfound are low-risk for
-occasional personal use via their dedicated buttons.
+except the AI provider call. LinkedIn actively detects/bans extension-based automation more
+than most sites — the AI-mapper's active, one-click-per-use shape is lower-risk than passive
+background automation would be, but still don't rely on it there for frequent/bulk use.
+
+⚠️ **Known issue, unresolved**: while testing this, the extension's background→server `fetch()`
+calls that need a CORS preflight (any POST/PATCH with a JSON body — which is every meaningful
+action: filling fields, chat updates, profile edits) hung indefinitely in automated Chrome
+testing, while simple requests (plain GET, header-less POST) worked instantly. Root-caused it
+partway: Chrome's Private Network Access policy requires an `Access-Control-Allow-Private-
+Network: true` header on the preflight response for a `chrome-extension://` origin reaching
+`localhost` — added that (`mcp-server/src/api/router.ts`), confirmed via `curl` that the header
+is now present — but the hang persisted even with it in place and even with Chrome's PNA
+enforcement flags explicitly disabled. Most likely explanation: a native Chrome permission
+prompt gating local-network access that needs a human to click "Allow," which an automated
+browser can never do — meaning this may not reproduce for you at all in normal use. **Please
+test the actual "🧠 Fill with Devcard" button yourself** (load unpacked via chrome://extensions,
+not automation) and report back — if it hangs for you too, this needs more investigation; if it
+works, the PNA header fix was sufficient and this note can come out.
 
 ---
 
@@ -228,11 +240,11 @@ own to lean on.
 
 ## What's not built yet
 
-- **LinkedIn adapter** — dropped by request, not planned. Uses the generic AI field mapper
-  instead (see above).
-- **Naukri/Indeed/Wellfound selectors** — present but unverified; you'll need to inspect your
-  own logged-in DevTools and fix the `SELECTORS` const in each `extension/entrypoints/content/
-  platforms/*.ts` file.
+- **Platform-specific adapters (LinkedIn, Naukri, Indeed, Wellfound)** — dropped entirely by
+  request, not planned. Every site uses the generic AI field mapper instead (see above), so
+  there's no more manual selector-verification homework.
+- **The CORS/autofill hang noted above** — needs you to test the real button in a real,
+  non-automated Chrome and report back.
 
 ---
 
