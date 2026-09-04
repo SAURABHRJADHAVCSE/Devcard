@@ -21,3 +21,12 @@ export const chatUpdate = (message: string) =>
   });
 
 export const getSyncStatus = () => request<SyncStatusEntry[]>("/api/sync-status");
+
+export interface PdfTemplateInfo {
+  id: string;
+  name: string;
+  description: string;
+  atsFriendly: boolean;
+}
+
+export const getPdfTemplates = () => request<PdfTemplateInfo[]>("/api/pdf/templates");

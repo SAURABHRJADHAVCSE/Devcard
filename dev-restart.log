@@ -43,3 +43,37 @@ dist/assets/index-CtdV4lgW.js   316.55 kB │ gzip: 102.19 kB
   └─ .output\chrome-mv3-dev\icon\96.png                 2.37 kB 
 Σ Total size: 115.42 kB                               
 [36mℹ[39m Load ".output\chrome-mv3-dev" as an unpacked extension manually
+error: script "dev" exited with code 1
+[36m
+build started...[39m
+transforming...
+✓ 1936 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.87 kB │ gzip:   0.45 kB
+dist/assets/index-FOSTrKAQ.css   36.24 kB │ gzip:   7.05 kB
+dist/assets/index-CtdV4lgW.js   316.55 kB │ gzip: 102.19 kB
+
+[36mbuilt in 444ms.[39m
+[36m
+build started...[39m
+transforming...
+✓ 1937 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.87 kB │ gzip:   0.45 kB
+dist/assets/index-FOSTrKAQ.css   36.24 kB │ gzip:   7.05 kB
+dist/assets/index-CtdV4lgW.js   316.55 kB │ gzip: 102.19 kB
+
+[36mbuilt in 401ms.[39m
+[36m
+build started...[39m
+transforming...
+✓ 1937 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.87 kB │ gzip:   0.45 kB
+dist/assets/index-FOSTrKAQ.css   36.24 kB │ gzip:   7.05 kB
+dist/assets/index-6qRRrXbx.js   318.10 kB │ gzip: 102.61 kB
+
+[36mbuilt in 357ms.[39m

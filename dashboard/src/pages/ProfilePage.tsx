@@ -3,6 +3,7 @@ import { FileText, LayoutGrid, Mail, MapPin, Globe, Link } from "lucide-react";
 import { getProfile, getResumeMarkdown } from "@/lib/api";
 import type { FullProfile } from "@/lib/types";
 import { MarkdownView } from "@/components/MarkdownView";
+import { DownloadResume } from "@/components/DownloadResume";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -207,14 +208,17 @@ export function ProfilePage() {
 
   return (
     <Tabs defaultValue="cards">
-      <TabsList className="mb-6 w-fit">
-        <TabsTrigger value="cards" className="gap-1.5">
-          <LayoutGrid size={14} /> Cards
-        </TabsTrigger>
-        <TabsTrigger value="markdown" className="gap-1.5">
-          <FileText size={14} /> Markdown
-        </TabsTrigger>
-      </TabsList>
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <TabsList className="w-fit">
+          <TabsTrigger value="cards" className="gap-1.5">
+            <LayoutGrid size={14} /> Cards
+          </TabsTrigger>
+          <TabsTrigger value="markdown" className="gap-1.5">
+            <FileText size={14} /> Markdown
+          </TabsTrigger>
+        </TabsList>
+        <DownloadResume />
+      </div>
 
       <TabsContent value="cards">
         <CardsView full={full} />
