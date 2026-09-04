@@ -4,6 +4,7 @@ import { ProfilePage } from "@/pages/ProfilePage";
 import { ChatPage } from "@/pages/ChatPage";
 import { SyncPage } from "@/pages/SyncPage";
 import { ResumesPage } from "@/pages/ResumesPage";
+import { GuidePage } from "@/pages/GuidePage";
 
 const PAGES: Record<Page, { title: string; subtitle: string; component: React.ComponentType }> = {
   profile: {
@@ -25,6 +26,11 @@ const PAGES: Record<Page, { title: string; subtitle: string; component: React.Co
     title: "Resumes",
     subtitle: "Preview every resume template and download the one you want.",
     component: ResumesPage,
+  },
+  guide: {
+    title: "Guide",
+    subtitle: "The standing instruction and prompt cheat sheet, ready to copy.",
+    component: GuidePage,
   },
 };
 

@@ -7,6 +7,10 @@ autofilled straight into a job site's form.
 This doc is "what can I actually do with this." For install/setup steps, see the root
 `README.md` and `mcp-server/README.md`.
 
+> The standing instruction and prompt cheat sheet below also live in the dashboard's
+> **Guide** tab (`http://localhost:6366`) with a one-click copy button on every prompt —
+> use that instead of copying out of this file day-to-day.
+
 ---
 
 ## The three ways in
