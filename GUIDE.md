@@ -93,7 +93,7 @@ without it — these work as one-off requests too):
 > "I've been writing Go for a few years now, add that"
 
 **Adding a project**
-> "I shipped a side project called Claratto, an AI tutoring platform, add it as a project"
+> "I shipped a side project called Pulsecheck, an AI-powered uptime monitor, add it as a project"
 > "Add my side project 'kalshi-bot' — a Python trading bot using the Kalshi API"
 
 **Adding / updating experience**
