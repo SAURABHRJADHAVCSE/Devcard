@@ -142,18 +142,26 @@ export function SectionHeader({ children, styles }: { children: string; styles: 
 }
 
 // Title on its own line, meta (location · dates) on the next. Deliberately
-// NOT a flex row with the title on the left and dates pinned right — a long
-// job title or company name (verified with a 100+ character title in
-// testing) wraps to two lines, and a sibling positioned by
-// justifyContent: "space-between" on that same row visually collides with
-// the wrapped second line. Stacking is unconditionally safe at any length.
+// NOT a flex row with the title on the left and dates pinned right, for two
+// independently confirmed reasons:
+// - Visual: a long job title (verified with a 100+ character title) wraps
+//   to two lines, and a sibling positioned by justifyContent: "space-between"
+//   on that same row can visually collide with the wrapped second line.
+// - ATS extraction (the more serious one): even a row built with correct
+//   flexGrow/flexShrink/flexBasis to avoid the visual collision above still
+//   corrupts *reading order* — verified by rendering a real test row and
+//   running plain `pdftotext` (no -layout) on it, which is closer to how
+//   many real ATS parsers walk a PDF's content stream. Every right-aligned
+//   date column got deferred to the very end of the document, orphaned from
+//   its entry, while the title text extracted in the right place. Stacking
+//   is unconditionally safe on both counts at any content length.
 export function EntryHeading({
   title,
   meta,
   styles,
 }: {
-  title: string;
-  meta?: string | null;
+  title: React.ReactNode;
+  meta?: React.ReactNode;
   styles: ReturnType<typeof useSharedStyles>;
 }) {
   return (

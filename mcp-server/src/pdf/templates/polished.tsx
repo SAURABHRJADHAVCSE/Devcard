@@ -1,20 +1,24 @@
-import { Document, Page, View, Text } from "@react-pdf/renderer";
+import { Fragment } from "react";
+import { Document, Page, View, Text, Link } from "@react-pdf/renderer";
 import type { FullProfile } from "../../db/get-full-profile";
-import { parseJsonArray, SKILL_CATEGORY_LABELS, dateRange } from "../format";
-import { useSharedStyles, SectionHeader, InlineBoldText, InlineBoldBulletList, TechLine, type ResumeTheme } from "../primitives";
+import { parseJsonArray, SKILL_CATEGORY_LABELS, dateRange, normalizeUrl } from "../format";
+import { useSharedStyles, SectionHeader, EntryHeading, InlineBoldText, InlineBoldBulletList, TechLine, type ResumeTheme } from "../primitives";
 import type { Density } from "../density";
 import { getDensityScale } from "../density";
 
-// Modeled on a polished, centered-header resume format: bold centered name,
-// a colored subtitle/contact block, colored section-header rules, and
-// **bold**-emphasized bullets. Same underlying data and single-column flow
-// as every other template — a styled, non-ATS option (color-dependent
-// headers) alongside Modern/Executive, not a replacement for ATS Simple or
-// Classic.
+// Centered header, navy-blue accents, colored section-header rules, and
+// **bold**-emphasized bullets. Section order and heading names follow
+// standard resume-design guidance for developer resumes: technical skills
+// surfaced near the top (right after the summary, ahead of experience) and
+// standard/recognizable headings ("Professional Summary", "Work
+// Experience"). Real clickable hyperlinks on the header links and project
+// URLs. Title/dates are stacked, not a right-aligned row — see
+// primitives.tsx:EntryHeading for why a row (tried and measured here first)
+// corrupts ATS reading order even when it looks fine on screen.
 const POLISHED_THEME: ResumeTheme = {
   ink: "#1a1a1a",
-  muted: "#5b5b5b",
-  accent: "#1d4ed8",
+  muted: "#555555",
+  accent: "#1e3a5f", // dark navy — reserved for section headers and real links, not general body text
   headerRule: "both",
   sectionHeaderCase: "none",
 };
@@ -26,7 +30,7 @@ export function PolishedResume({ full, density = "comfortable" }: { full: FullPr
   const { profile: p, skills, experiences, projects, education, certifications } = full;
 
   const contactFacts = [p?.email, p?.phone, p?.location].filter(Boolean).join("   ·   ");
-  const links = [p?.website, p?.github, p?.linkedin].filter(Boolean).join("   ·   ");
+  const linkUrls = [p?.website, p?.github, p?.linkedin].filter((v): v is string => Boolean(v));
 
   const byCategory = new Map<string, string[]>();
   for (const skill of skills) {
@@ -52,40 +56,24 @@ export function PolishedResume({ full, density = "comfortable" }: { full: FullPr
             </Text>
           )}
           {contactFacts.length > 0 && <Text style={[styles.contactLine, { textAlign: "center" }]}>{contactFacts}</Text>}
-          {links.length > 0 && (
-            <Text style={[styles.contactLine, { textAlign: "center", color: POLISHED_THEME.accent }]}>{links}</Text>
+          {linkUrls.length > 0 && (
+            <Text style={[styles.contactLine, { textAlign: "center", color: POLISHED_THEME.accent }]}>
+              {linkUrls.map((url, i) => (
+                <Fragment key={url}>
+                  {i > 0 && "   ·   "}
+                  <Link src={normalizeUrl(url)} style={{ color: POLISHED_THEME.accent }}>
+                    {url}
+                  </Link>
+                </Fragment>
+              ))}
+            </Text>
           )}
         </View>
 
         {p?.bio && (
           <View>
-            <SectionHeader styles={styles}>Summary</SectionHeader>
+            <SectionHeader styles={styles}>Professional Summary</SectionHeader>
             <InlineBoldText text={p.bio} style={styles.summary} boldFontFamily={BOLD_FONT} />
-          </View>
-        )}
-
-        {experiences.length > 0 && (
-          <View>
-            <SectionHeader styles={styles}>Experience</SectionHeader>
-            {experiences.map((e) => {
-              const dates = dateRange(e.startDate, e.endDate, e.isCurrent);
-              return (
-                <View key={e.id} style={styles.entry} wrap={false}>
-                  <Text style={styles.entryTitle}>
-                    {e.role} — {e.company}
-                  </Text>
-                  {(e.location || dates) && (
-                    <Text style={styles.entryMeta}>
-                      {e.location}
-                      {e.location && dates ? "   ·   " : ""}
-                      {dates && <Text style={{ color: POLISHED_THEME.accent }}>{dates}</Text>}
-                    </Text>
-                  )}
-                  <InlineBoldBulletList text={e.description} styles={styles} boldFontFamily={BOLD_FONT} />
-                  <TechLine tech={parseJsonArray(e.techUsed)} styles={styles} />
-                </View>
-              );
-            })}
           </View>
         )}
 
@@ -101,18 +89,39 @@ export function PolishedResume({ full, density = "comfortable" }: { full: FullPr
           </View>
         )}
 
+        {experiences.length > 0 && (
+          <View>
+            <SectionHeader styles={styles}>Work Experience</SectionHeader>
+            {experiences.map((e) => {
+              const meta = [e.location, dateRange(e.startDate, e.endDate, e.isCurrent)].filter(Boolean).join("   ·   ");
+              return (
+                <View key={e.id} style={styles.entry} wrap={false}>
+                  <EntryHeading title={`${e.role} — ${e.company}`} meta={meta} styles={styles} />
+                  <InlineBoldBulletList text={e.description} styles={styles} boldFontFamily={BOLD_FONT} />
+                  <TechLine tech={parseJsonArray(e.techUsed)} styles={styles} />
+                </View>
+              );
+            })}
+          </View>
+        )}
+
         {projects.length > 0 && (
           <View>
             <SectionHeader styles={styles}>Projects</SectionHeader>
             {projects.map((proj) => {
-              const dates = dateRange(proj.startDate, proj.endDate);
+              const title = proj.url ? (
+                <>
+                  {proj.name}{" "}
+                  <Link src={normalizeUrl(proj.url)} style={{ color: POLISHED_THEME.accent }}>
+                    {proj.url}
+                  </Link>
+                </>
+              ) : (
+                proj.name
+              );
               return (
                 <View key={proj.id} style={styles.entry} wrap={false}>
-                  <Text style={styles.entryTitle}>
-                    {proj.name}
-                    {proj.url && <Text style={{ color: POLISHED_THEME.accent }}> — {proj.url}</Text>}
-                  </Text>
-                  {dates && <Text style={[styles.entryMeta, { color: POLISHED_THEME.accent }]}>{dates}</Text>}
+                  <EntryHeading title={title} meta={dateRange(proj.startDate, proj.endDate)} styles={styles} />
                   <InlineBoldBulletList text={proj.description} styles={styles} boldFontFamily={BOLD_FONT} />
                   <TechLine tech={parseJsonArray(proj.tech)} styles={styles} />
                 </View>
@@ -126,18 +135,11 @@ export function PolishedResume({ full, density = "comfortable" }: { full: FullPr
             <SectionHeader styles={styles}>Education</SectionHeader>
             {education.map((ed) => {
               const degreeLine = [ed.degree, ed.field].filter(Boolean).join(" in ") || ed.institution;
-              const institutionLine = degreeLine !== ed.institution ? ed.institution : "";
               const years = [ed.startYear, ed.endYear].filter(Boolean).join(" – ");
+              const meta = [degreeLine !== ed.institution ? ed.institution : null, years].filter(Boolean).join("   ·   ");
               return (
                 <View key={ed.id} style={styles.entry} wrap={false}>
-                  <Text style={styles.entryTitle}>{degreeLine}</Text>
-                  {(institutionLine || years) && (
-                    <Text style={styles.entryMeta}>
-                      {institutionLine}
-                      {institutionLine && years ? "   ·   " : ""}
-                      {years && <Text style={{ color: POLISHED_THEME.accent }}>{years}</Text>}
-                    </Text>
-                  )}
+                  <EntryHeading title={degreeLine} meta={meta} styles={styles} />
                 </View>
               );
             })}

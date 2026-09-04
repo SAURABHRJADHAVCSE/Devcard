@@ -22,6 +22,14 @@ export function dateRange(start: string | null, end: string | null, isCurrent?: 
   return [from, to].filter(Boolean).join(" – ");
 }
 
+// Profile/project URLs are stored as the user typed them ("github.com/x",
+// "x.dev") — fine as display text, but a real PDF hyperlink needs a scheme
+// or most viewers won't treat it as clickable/will resolve it relative to
+// nothing. Only prepends when one isn't already there.
+export function normalizeUrl(url: string): string {
+  return /^https?:\/\//i.test(url) ? url : `https://${url}`;
+}
+
 // The DB stores one free-text `description` per experience/project (not a
 // bullets array) — splitting on newlines gets bullet-style output for
 // anyone who writes one achievement per line, without a schema migration.

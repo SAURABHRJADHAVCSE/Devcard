@@ -90,13 +90,15 @@ async function main() {
         if (profile.education.length > 0) check(HEADING_RE.education.test(text), 'has an "Education" heading');
 
         // Reading-order sanity: name must extract before the first section
-        // heading, and (when present) Experience before Skills — catches
-        // the "scrambled by flexbox" failure mode directly.
+        // heading, and (when present) Skills before Experience — Polished
+        // deliberately surfaces technical skills ahead of experience (see
+        // templates/polished.tsx) — catches the "scrambled by flexbox"
+        // failure mode directly.
         const nameIdx = text.indexOf(name);
-        const expIdx = headingIndex(text, HEADING_RE.experience);
         const skillsIdx = headingIndex(text, HEADING_RE.skills);
-        if (nameIdx >= 0 && expIdx >= 0) check(nameIdx < expIdx, "name extracts before Experience section");
-        if (expIdx >= 0 && skillsIdx >= 0) check(expIdx < skillsIdx, "Experience extracts before Skills (reading order)");
+        const expIdx = headingIndex(text, HEADING_RE.experience);
+        if (nameIdx >= 0 && skillsIdx >= 0) check(nameIdx < skillsIdx, "name extracts before Skills section");
+        if (skillsIdx >= 0 && expIdx >= 0) check(skillsIdx < expIdx, "Skills extracts before Experience (reading order)");
       } else {
         console.log("  (pdftotext not available — skipped text-based checks)");
       }

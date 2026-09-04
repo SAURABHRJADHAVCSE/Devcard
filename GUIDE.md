@@ -125,10 +125,16 @@ standalone app window (own taskbar icon, no browser chrome).
     they don't change your stored profile; use Chat update or Claude for that.)
 - **Resumes tab** — a card per template, each with a live inline preview and its own
   **Open full size** / **Download PDF** buttons. Only one template is registered right now:
-  - **Polished** (default) — centered header, blue accents, colored section rules. Also the
-    only template that renders `**bold**`-marked spans in your bio/bullet text as real bold
-    emphasis (write `**like this**` in a description to have specific phrases stand out). Not
-    ATS-optimized (relies on color for section headers).
+  - **Polished** (default) — centered header, dark-navy accents, colored section rules,
+    standard section headings ("Professional Summary", "Work Experience"), and technical
+    skills placed right after the summary — ahead of experience, per standard developer-resume
+    guidance. Website/GitHub/LinkedIn links and project URLs render as real clickable PDF
+    hyperlinks, not just colored text. Also the only template that renders `**bold**`-marked
+    spans in your bio/bullet text as real bold emphasis (write `**like this**` in a description
+    to have specific phrases stand out). Title/dates stay stacked rather than right-aligned on
+    one line — a right-aligned row was tried and measured (see `primitives.tsx:EntryHeading`):
+    it looks fine on screen but corrupts ATS reading order, so it was reverted. Not
+    ATS-optimized overall (relies on color for section headers).
 
   Four other templates (ATS Simple, Classic, Modern, Executive) were built during the earlier
   ATS audit and are still sitting, working and tested, in `mcp-server/src/pdf/templates/` — just
@@ -139,11 +145,14 @@ standalone app window (own taskbar icon, no browser chrome).
   Every template shares one underlying layout engine (`mcp-server/src/pdf/`): real selectable
   text (never rasterized), correct top-to-bottom reading order, base-14 fonts only (so nothing
   depends on font embedding), and blank PDF creator/producer metadata (no tool branding in the
-  file). Every resume is auto-fit to one page by progressively tightening spacing/font-size
-  through three density tiers before ever falling back to a second page — checked by actually
-  rendering and counting pages, not estimated. Run `bun run test` in `mcp-server/` to
-  re-validate whatever's currently registered against a set of synthetic resume fixtures
-  (short/medium/dense/long-content) any time the PDF code changes.
+  file). Margins (0.5–0.6in), line-height (1.15–1.25), and font sizes (name 18–22pt, section
+  headers 13–14pt, body 10–11pt) are pinned to standard resume-design ranges and held constant
+  across densities in `density.ts` — a resume auto-fits to one page by progressively
+  tightening *inter-element spacing* through three density tiers first, and only prints as two
+  pages if content still doesn't fit at the tightest tier without breaking those ranges (this
+  is expected/normal for an extensive-experience resume, not a bug). Run `bun run test` in
+  `mcp-server/` to re-validate whatever's currently registered against a set of synthetic
+  resume fixtures (short/medium/dense/long-content) any time the PDF code changes.
 
   Adding/re-enabling a template just needs an import plus one entry in
   `mcp-server/src/pdf/registry.ts`; the Resumes tab picks it up automatically.
