@@ -78,4 +78,21 @@ export function registerProjectTools(server: McpServer) {
       };
     },
   );
+
+  server.registerTool(
+    "remove_project",
+    {
+      title: "Remove project",
+      description: "Removes a project by id. Use get_full_profile or search_profile first to find the id.",
+      inputSchema: { id: z.string() },
+    },
+    async ({ id }) => {
+      await logKnowledgeEvent("mcp", { op: "remove_project", id });
+      const [row] = await db.delete(projects).where(eq(projects.id, id)).returning();
+
+      return {
+        content: [{ type: "text", text: row ? `Removed project: ${row.name}` : `No project with id ${id}` }],
+      };
+    },
+  );
 }

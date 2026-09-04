@@ -22,6 +22,13 @@ export const chatUpdate = (message: string) =>
 
 export const getSyncStatus = () => request<SyncStatusEntry[]>("/api/sync-status");
 
+// Each returns the fresh full profile so the caller can update its view
+// straight from the response instead of issuing a second GET.
+export const deleteSkill = (id: string) => request<FullProfile>(`/api/profile/skills/${id}`, { method: "DELETE" });
+export const deleteExperience = (id: string) => request<FullProfile>(`/api/profile/experiences/${id}`, { method: "DELETE" });
+export const deleteProject = (id: string) => request<FullProfile>(`/api/profile/projects/${id}`, { method: "DELETE" });
+export const deleteEducation = (id: string) => request<FullProfile>(`/api/profile/education/${id}`, { method: "DELETE" });
+
 export interface PdfTemplateInfo {
   id: string;
   name: string;

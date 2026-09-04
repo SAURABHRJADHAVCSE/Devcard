@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { FileText, LayoutGrid, Mail, MapPin, Globe, Link } from "lucide-react";
-import { getProfile, getResumeMarkdown } from "@/lib/api";
+import { FileText, LayoutGrid, Mail, MapPin, Globe, Link, X } from "lucide-react";
+import { getProfile, getResumeMarkdown, deleteSkill, deleteExperience, deleteProject, deleteEducation } from "@/lib/api";
 import type { FullProfile } from "@/lib/types";
 import { MarkdownView } from "@/components/MarkdownView";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 function parseJsonArray(value: string | null): string[] {
@@ -42,7 +43,27 @@ function TechBadges({ tech }: { tech: string[] }) {
   );
 }
 
-function CardsView({ full }: { full: FullProfile }) {
+// Absolute-positioned, hidden until the containing `group` (the Card) is
+// hovered — deletion is one click away but never visually competes with the
+// content itself. `confirm()` is enough friction for personal local data;
+// no need for a custom dialog.
+function DeleteButton({ label, onConfirm }: { label: string; onConfirm: () => void }) {
+  return (
+    <Button
+      variant="ghost"
+      size="icon-xs"
+      aria-label={`Remove ${label}`}
+      onClick={() => {
+        if (window.confirm(`Remove "${label}" from your knowledge base? This can't be undone.`)) onConfirm();
+      }}
+      className="absolute top-2 right-2 text-muted-foreground opacity-0 transition-opacity hover:bg-destructive/10 hover:text-destructive group-hover:opacity-100"
+    >
+      <X size={13} />
+    </Button>
+  );
+}
+
+function CardsView({ full, onChange }: { full: FullProfile; onChange: (full: FullProfile) => void }) {
   const { profile, skills, experiences, projects, education, certifications } = full;
 
   const byCategory = new Map<string, typeof skills>();
@@ -99,8 +120,18 @@ function CardsView({ full }: { full: FullProfile }) {
                 <span className="w-28 shrink-0 text-sm text-muted-foreground">{CATEGORY_LABELS[category] ?? category}</span>
                 <div className="flex flex-wrap gap-2">
                   {list.map((s) => (
-                    <Badge key={s.id} variant="secondary" className="h-6 px-3 text-[0.8rem]">
+                    <Badge key={s.id} variant="secondary" className="group h-6 py-0 pr-1 pl-3 text-[0.8rem]">
                       {s.name}
+                      <button
+                        type="button"
+                        aria-label={`Remove ${s.name}`}
+                        onClick={() => {
+                          if (window.confirm(`Remove "${s.name}" from your skills?`)) deleteSkill(s.id).then(onChange);
+                        }}
+                        className="ml-1 rounded-full p-0.5 opacity-0 transition-opacity hover:bg-destructive/20 hover:text-destructive group-hover:opacity-100"
+                      >
+                        <X size={10} />
+                      </button>
                     </Badge>
                   ))}
                 </div>
@@ -115,9 +146,10 @@ function CardsView({ full }: { full: FullProfile }) {
           <SectionTitle>Experience</SectionTitle>
           <div className="space-y-4">
             {experiences.map((e) => (
-              <Card key={e.id}>
+              <Card key={e.id} className="group relative">
                 <CardContent>
-                  <div className="flex items-baseline justify-between gap-4">
+                  <DeleteButton label={`${e.role} at ${e.company}`} onConfirm={() => deleteExperience(e.id).then(onChange)} />
+                  <div className="flex items-baseline justify-between gap-4 pr-6">
                     <div>
                       <div className="font-semibold">{e.role}</div>
                       <div className="text-sm text-muted-foreground">{e.company}</div>
@@ -140,9 +172,10 @@ function CardsView({ full }: { full: FullProfile }) {
           <SectionTitle>Projects</SectionTitle>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {projects.map((p) => (
-              <Card key={p.id}>
+              <Card key={p.id} className="group relative">
                 <CardContent>
-                  <div className="font-semibold">{p.name}</div>
+                  <DeleteButton label={p.name} onConfirm={() => deleteProject(p.id).then(onChange)} />
+                  <div className="pr-6 font-semibold">{p.name}</div>
                   {p.description && <p className="mt-2 text-sm leading-relaxed text-foreground/80">{p.description}</p>}
                   <TechBadges tech={parseJsonArray(p.tech)} />
                 </CardContent>
@@ -157,9 +190,10 @@ function CardsView({ full }: { full: FullProfile }) {
           <SectionTitle>Education</SectionTitle>
           <div className="space-y-3">
             {education.map((ed) => (
-              <Card key={ed.id}>
+              <Card key={ed.id} className="group relative">
                 <CardContent>
-                  <div className="font-semibold">{[ed.degree, ed.field].filter(Boolean).join(" in ")}</div>
+                  <DeleteButton label={ed.institution} onConfirm={() => deleteEducation(ed.id).then(onChange)} />
+                  <div className="pr-6 font-semibold">{[ed.degree, ed.field].filter(Boolean).join(" in ")}</div>
                   <div className="text-sm text-muted-foreground">
                     {ed.institution}
                     {(ed.startYear || ed.endYear) && ` · ${ed.startYear ?? ""} – ${ed.endYear ?? ""}`}
@@ -205,6 +239,14 @@ export function ProfilePage() {
   if (error) return <div className="text-destructive">{error}</div>;
   if (!full) return <div className="text-muted-foreground">Loading…</div>;
 
+  // A card delete already returns the fresh profile (no need to re-fetch
+  // that), but the Markdown tab's export is a separately-rendered string
+  // that would otherwise go stale until a full page reload.
+  function handleChange(updated: FullProfile) {
+    setFull(updated);
+    getResumeMarkdown().then(setMarkdown);
+  }
+
   return (
     <Tabs defaultValue="cards">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
@@ -219,7 +261,7 @@ export function ProfilePage() {
       </div>
 
       <TabsContent value="cards">
-        <CardsView full={full} />
+        <CardsView full={full} onChange={handleChange} />
       </TabsContent>
       <TabsContent value="markdown">
         <MarkdownView markdown={markdown} />

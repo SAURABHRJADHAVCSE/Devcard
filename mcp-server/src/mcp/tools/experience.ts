@@ -87,4 +87,26 @@ export function registerExperienceTools(server: McpServer) {
       };
     },
   );
+
+  server.registerTool(
+    "remove_experience",
+    {
+      title: "Remove experience",
+      description: "Removes a work experience entry by id. Use get_full_profile or search_profile first to find the id.",
+      inputSchema: { id: z.string() },
+    },
+    async ({ id }) => {
+      await logKnowledgeEvent("mcp", { op: "remove_experience", id });
+      const [row] = await db.delete(experiences).where(eq(experiences.id, id)).returning();
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: row ? `Removed experience: ${row.role} at ${row.company}` : `No experience with id ${id}`,
+          },
+        ],
+      };
+    },
+  );
 }

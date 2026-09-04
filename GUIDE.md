@@ -34,13 +34,19 @@ colleague.
 ```
 I keep a personal knowledge base called Devcard, reachable through its MCP tools
 (add_skill, add_experience, add_project, add_education, update_profile, remove_skill,
-search_profile, get_full_profile, get_resume_text). Treat it as the standing source of
-truth for my skills, work history, and projects.
+remove_experience, remove_project, remove_education, search_profile, get_full_profile,
+get_resume_text). Treat it as the standing source of truth for my skills, work history,
+and projects.
 
 Whenever I mention something that belongs there — I learned a technology, shipped or
 started a project, changed roles, finished a course, earned a certification — call the
 matching tool yourself and persist it. Don't just acknowledge it in chat; actually write
 it. Briefly confirm what you added afterward.
+
+If I ask you to remove or delete something (a skill, job, project, or education entry),
+look it up first (get_full_profile or search_profile) to find its id, confirm with me
+which specific entry I mean if there's any ambiguity, then call the matching remove_*
+tool. Don't remove anything I didn't explicitly ask to have removed.
 
 Rules:
 - Call the specific tool (add_skill, add_project, etc.) directly. Never call
@@ -119,10 +125,15 @@ Open it in a browser tab, or click the **install icon** in Chrome's address bar 
 standalone app window (own taskbar icon, no browser chrome).
 
 - **Knowledge base tab** — everything in your profile, in two views:
-  - **Cards**: skills grouped by category, experience, projects, education, certifications
+  - **Cards**: skills grouped by category, experience, projects, education, certifications.
+    Hover any skill or entry card for a small **×** — click it (then confirm) to permanently
+    remove that skill/experience/project/education entry from your stored profile. This is a
+    real delete against the database, not local-only — there's no undo beyond re-adding it.
+    (Certifications don't have this yet — see below.)
   - **Markdown**: a clean resume-formatted export. Toggle **Edit** to tweak wording, **Copy**
     to grab it for pasting into an actual resume or cover letter. (Edits here are local only —
-    they don't change your stored profile; use Chat update or Claude for that.)
+    they don't change your stored profile; use the delete buttons above, Chat update, or Claude
+    for that.)
 - **Resumes tab** — a card per template, each with a live inline preview and its own
   **Open full size** / **Download PDF** buttons. Only one template is registered right now:
   - **Polished** (default) — centered header, dark-navy accents, colored section rules,
@@ -233,9 +244,9 @@ own to lean on.
 |---|---|
 | `update_knowledge_base(message)` | Parses raw text via the server's own AI call — for non-LLM callers only |
 | `add_skill` / `remove_skill` / `list_skills` | Direct skill management |
-| `add_experience` / `update_experience` | Work history |
-| `add_project` / `update_project` | Projects |
-| `add_education` | Education entries |
+| `add_experience` / `update_experience` / `remove_experience` | Work history |
+| `add_project` / `update_project` / `remove_project` | Projects |
+| `add_education` / `remove_education` | Education entries |
 | `update_profile` | Name, headline, bio, contact info |
 | `get_full_profile` | Everything, as structured JSON |
 | `get_resume_text` | Everything, as clean Markdown |

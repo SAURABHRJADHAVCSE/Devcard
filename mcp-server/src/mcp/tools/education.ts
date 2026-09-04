@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { eq } from "drizzle-orm";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { db } from "../../db/client";
 import { education } from "../../db/schema";
@@ -27,6 +28,28 @@ export function registerEducationTools(server: McpServer) {
 
       return {
         content: [{ type: "text", text: `Added education: ${row.degree ?? ""} at ${row.institution}`.trim() }],
+      };
+    },
+  );
+
+  server.registerTool(
+    "remove_education",
+    {
+      title: "Remove education",
+      description: "Removes an education entry by id. Use get_full_profile or search_profile first to find the id.",
+      inputSchema: { id: z.string() },
+    },
+    async ({ id }) => {
+      await logKnowledgeEvent("mcp", { op: "remove_education", id });
+      const [row] = await db.delete(education).where(eq(education.id, id)).returning();
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: row ? `Removed education: ${row.degree ?? ""} at ${row.institution}`.trim() : `No education with id ${id}`,
+          },
+        ],
       };
     },
   );
