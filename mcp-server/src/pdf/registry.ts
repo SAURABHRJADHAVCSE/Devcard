@@ -1,8 +1,7 @@
 import { renderToBuffer } from "@react-pdf/renderer";
 import type { FullProfile } from "../db/get-full-profile";
 import type { Density } from "./density";
-import { AtsResume } from "./templates/ats";
-import { ModernResume } from "./templates/modern";
+import { PolishedResume } from "./templates/polished";
 
 // Typed off renderToBuffer's own parameter rather than importing DocumentProps
 // directly — @react-pdf/renderer's `export = ReactPDF` namespace style makes
@@ -18,24 +17,25 @@ export interface PdfTemplate {
   render: (full: FullProfile, density: Density) => PdfDocument;
 }
 
+// Only "polished" is registered for now — ats/classic/modern/executive were
+// unregistered by request (this repo has no git, so their .tsx files were
+// left in place under templates/ rather than deleted; re-adding one later is
+// a one-line entry here plus its import above).
+//
+// Adding a template: write templates/<id>.tsx using the shared primitives
+// (primitives.tsx) with your own ResumeTheme, then add one entry here. The
+// dashboard's Resumes tab and /api/pdf/templates pick it up automatically.
 export const PDF_TEMPLATES: PdfTemplate[] = [
   {
-    id: "ats",
-    name: "ATS Simple",
-    description: "Single-column, plain text, no colors or graphics — built to parse cleanly in applicant tracking systems.",
-    atsFriendly: true,
-    render: (full, density) => AtsResume({ full, density }),
-  },
-  {
-    id: "modern",
-    name: "Modern",
-    description: "Same content and layout, with color accents — best for a human reader, not optimized for ATS parsing.",
+    id: "polished",
+    name: "Polished",
+    description: "Centered header, blue accents, and bold-emphasized bullets.",
     atsFriendly: false,
-    render: (full, density) => ModernResume({ full, density }),
+    render: (full, density) => PolishedResume({ full, density }),
   },
 ];
 
-export const DEFAULT_TEMPLATE_ID = "ats";
+export const DEFAULT_TEMPLATE_ID = "polished";
 
 export function getTemplate(id: string | undefined): PdfTemplate {
   return PDF_TEMPLATES.find((t) => t.id === id) ?? PDF_TEMPLATES.find((t) => t.id === DEFAULT_TEMPLATE_ID)!;

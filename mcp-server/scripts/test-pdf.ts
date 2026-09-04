@@ -19,6 +19,20 @@ import { FIXTURES } from "./pdf-fixtures";
 let failures = 0;
 const workDir = mkdtempSync(join(tmpdir(), "devcard-pdf-test-"));
 
+// Anchored to a standalone line so this matches a real section heading
+// ("WORK EXPERIENCE" or sentence-case "Experience") without also matching
+// the word inside prose (e.g. "3+ years of experience" in a summary).
+const HEADING_RE = {
+  experience: /^(?:work experience|experience)\s*$/im,
+  skills: /^skills\s*$/im,
+  education: /^education\s*$/im,
+};
+
+function headingIndex(text: string, re: RegExp): number {
+  const m = re.exec(text);
+  return m ? m.index : -1;
+}
+
 function check(condition: boolean, label: string) {
   console.log(`  ${condition ? "✓" : "✗ FAIL"}  ${label}`);
   if (!condition) failures++;
@@ -43,7 +57,12 @@ async function main() {
       console.log(`\n=== ${template.id} :: ${fixtureName} ===`);
 
       const result = await renderResumePdf(template.id, profile);
-      const doc = await PDFDocument.load(result.buffer);
+      // updateMetadata: false — otherwise pdf-lib stamps its own Producer/
+      // Creator into the in-memory parse just from loading it (even without
+      // ever calling .save()), which would make this check a false
+      // positive: it'd be reporting pdf-lib's own signature, not what's
+      // actually in the bytes we serve to users.
+      const doc = await PDFDocument.load(result.buffer, { updateMetadata: false });
       const text = await extractText(result.buffer);
 
       check(result.pageCount >= 1, `renders (${result.pageCount} page${result.pageCount === 1 ? "" : "s"}, density=${result.density})`);
@@ -58,21 +77,26 @@ async function main() {
       check(creator === "" && producer === "", `creator/producer metadata blank (got creator="${creator}", producer="${producer}")`);
 
       if (text) {
-        const name = profile.profile?.name ?? "";
-        check(text.includes(name), "candidate name appears in extracted text");
+        // Whitespace-normalized: a very long name legitimately wraps across
+        // lines (pdftotext -layout renders that as a newline), which is
+        // correct, uncorrupted text — an ATS parser normalizes whitespace
+        // the same way when matching, so this compares the same way it does.
+        const normalized = text.replace(/\s+/g, " ");
+        const name = (profile.profile?.name ?? "").replace(/\s+/g, " ");
+        check(normalized.includes(name), "candidate name appears in extracted text (whitespace-normalized)");
         if (profile.profile?.email) check(text.includes(profile.profile.email), "email appears in extracted text");
-        if (profile.experiences.length > 0) check(text.includes("WORK EXPERIENCE"), 'has "WORK EXPERIENCE" heading');
-        if (profile.skills.length > 0) check(text.includes("SKILLS"), 'has "SKILLS" heading');
-        if (profile.education.length > 0) check(text.includes("EDUCATION"), 'has "EDUCATION" heading');
+        if (profile.experiences.length > 0) check(HEADING_RE.experience.test(text), 'has an "Experience" heading');
+        if (profile.skills.length > 0) check(HEADING_RE.skills.test(text), 'has a "Skills" heading');
+        if (profile.education.length > 0) check(HEADING_RE.education.test(text), 'has an "Education" heading');
 
         // Reading-order sanity: name must extract before the first section
-        // heading, and (when present) WORK EXPERIENCE before SKILLS —
-        // catches the "scrambled by flexbox" failure mode directly.
+        // heading, and (when present) Experience before Skills — catches
+        // the "scrambled by flexbox" failure mode directly.
         const nameIdx = text.indexOf(name);
-        const expIdx = text.indexOf("WORK EXPERIENCE");
-        const skillsIdx = text.indexOf("SKILLS");
-        if (nameIdx >= 0 && expIdx >= 0) check(nameIdx < expIdx, "name extracts before WORK EXPERIENCE section");
-        if (expIdx >= 0 && skillsIdx >= 0) check(expIdx < skillsIdx, "WORK EXPERIENCE extracts before SKILLS (reading order)");
+        const expIdx = headingIndex(text, HEADING_RE.experience);
+        const skillsIdx = headingIndex(text, HEADING_RE.skills);
+        if (nameIdx >= 0 && expIdx >= 0) check(nameIdx < expIdx, "name extracts before Experience section");
+        if (expIdx >= 0 && skillsIdx >= 0) check(expIdx < skillsIdx, "Experience extracts before Skills (reading order)");
       } else {
         console.log("  (pdftotext not available — skipped text-based checks)");
       }

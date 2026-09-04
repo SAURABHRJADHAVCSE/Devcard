@@ -123,15 +123,30 @@ standalone app window (own taskbar icon, no browser chrome).
   - **Markdown**: a clean resume-formatted export. Toggle **Edit** to tweak wording, **Copy**
     to grab it for pasting into an actual resume or cover letter. (Edits here are local only —
     they don't change your stored profile; use Chat update or Claude for that.)
-  - **Download PDF**: pick a template from the dropdown, click **Download PDF**. Two templates
-    ship today:
-    - **ATS Simple** (default) — single column, plain black text, no graphics or tables. Built
-      to parse cleanly in applicant tracking systems; verified by extracting its text and
-      confirming it reads in the same order as the visual layout.
-    - **Modern** — same content, with color accents for a human reader. Not ATS-optimized —
-      use ATS Simple for that.
-    More templates just need adding to `mcp-server/src/pdf/registry.ts`; the picker updates
-    itself.
+- **Resumes tab** — a card per template, each with a live inline preview and its own
+  **Open full size** / **Download PDF** buttons. Only one template is registered right now:
+  - **Polished** (default) — centered header, blue accents, colored section rules. Also the
+    only template that renders `**bold**`-marked spans in your bio/bullet text as real bold
+    emphasis (write `**like this**` in a description to have specific phrases stand out). Not
+    ATS-optimized (relies on color for section headers).
+
+  Four other templates (ATS Simple, Classic, Modern, Executive) were built during the earlier
+  ATS audit and are still sitting, working and tested, in `mcp-server/src/pdf/templates/` — just
+  unregistered from `registry.ts` by request, to keep only Polished active for now. This repo
+  has no git, so they were left in place rather than deleted; re-enabling one is a one-line
+  import + registry entry, no rewrite needed.
+
+  Every template shares one underlying layout engine (`mcp-server/src/pdf/`): real selectable
+  text (never rasterized), correct top-to-bottom reading order, base-14 fonts only (so nothing
+  depends on font embedding), and blank PDF creator/producer metadata (no tool branding in the
+  file). Every resume is auto-fit to one page by progressively tightening spacing/font-size
+  through three density tiers before ever falling back to a second page — checked by actually
+  rendering and counting pages, not estimated. Run `bun run test` in `mcp-server/` to
+  re-validate whatever's currently registered against a set of synthetic resume fixtures
+  (short/medium/dense/long-content) any time the PDF code changes.
+
+  Adding/re-enabling a template just needs an import plus one entry in
+  `mcp-server/src/pdf/registry.ts`; the Resumes tab picks it up automatically.
 - **Chat update tab** — the same natural-language update flow as the extension, full-size,
   with visible history of what each message changed.
 - **Sync status tab** — which platforms (LinkedIn, Naukri, Indeed, Wellfound) have your
@@ -199,6 +214,7 @@ own to lean on.
 |---|---|
 | `GET /api/pdf/templates` | Lists available templates (id, name, description, whether it's ATS-friendly) |
 | `GET /api/pdf?template=ats` | Downloads the resume PDF using that template (`ats` is the default if omitted) |
+| `GET /api/pdf?template=ats&disposition=inline` | Same PDF, served for in-page viewing (used by the Resumes tab's preview) instead of triggering a download |
 
 ---
 

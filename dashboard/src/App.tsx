@@ -3,6 +3,7 @@ import { Sidebar, type Page } from "@/components/Sidebar";
 import { ProfilePage } from "@/pages/ProfilePage";
 import { ChatPage } from "@/pages/ChatPage";
 import { SyncPage } from "@/pages/SyncPage";
+import { ResumesPage } from "@/pages/ResumesPage";
 
 const PAGES: Record<Page, { title: string; subtitle: string; component: React.ComponentType }> = {
   profile: {
@@ -19,6 +20,11 @@ const PAGES: Record<Page, { title: string; subtitle: string; component: React.Co
     title: "Sync status",
     subtitle: "Which platforms have your latest profile, and which don't.",
     component: SyncPage,
+  },
+  resumes: {
+    title: "Resumes",
+    subtitle: "Preview every resume template and download the one you want.",
+    component: ResumesPage,
   },
 };
 

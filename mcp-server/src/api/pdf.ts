@@ -16,9 +16,13 @@ pdfRouter.get("/", async (c) => {
   const { buffer, pageCount, fitOnePage } = await renderResumePdf(c.req.query("template"), full);
 
   const filename = `${(full.profile?.name || "resume").replace(/[^a-z0-9]+/gi, "-").toLowerCase()}.pdf`;
+  // Default is a real download (attachment) — the dashboard's resume
+  // previewer opts into `?disposition=inline` so the browser renders the
+  // PDF in an <iframe> instead of triggering a save dialog.
+  const disposition = c.req.query("disposition") === "inline" ? "inline" : "attachment";
   return c.body(new Uint8Array(buffer), 200, {
     "Content-Type": "application/pdf",
-    "Content-Disposition": `attachment; filename="${filename}"`,
+    "Content-Disposition": `${disposition}; filename="${filename}"`,
     // Informational only — lets a client warn "this didn't fit one page"
     // without having to parse the PDF itself.
     "X-Resume-Page-Count": String(pageCount),

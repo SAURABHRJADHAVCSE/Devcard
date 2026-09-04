@@ -1,6 +1,14 @@
 import { View, Text, StyleSheet } from "@react-pdf/renderer";
 import type { DensityScale } from "./density";
-import { toBullets } from "./format";
+import { toBullets, parseInlineBold } from "./format";
+
+// @react-pdf/renderer exports its Style/StyleProp type via `export =`,
+// which TS can't cleanly name here (its Text component is overloaded for
+// SVG text too, so deriving off ComponentProps pulls in an unrelated SVG
+// variant) — same awkwardness registry.ts notes for PdfDocument. `any` is
+// the pragmatic escape hatch other callers already pass StyleSheet.create
+// results or plain style objects through.
+type TextStyleProp = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 // Every template builds on these. They encode the ATS-safety rules once —
 // single-column flow, real text (no icons standing in for content), a
@@ -13,7 +21,21 @@ export interface ResumeTheme {
   ink: string;
   muted: string;
   accent: string;
-  headerRule: "line" | "color"; // "line": black border-bottom (ATS-plainest). "color": colored text, no border.
+  // "line": black border-bottom (ATS-plainest). "color": colored text, no
+  // border. "both": colored text + a colored border — a styled option that
+  // still keeps a clear rule under each heading.
+  headerRule: "line" | "color" | "both";
+  // Base-14 PDF fonts only (Helvetica/Times/Courier + Bold) — always
+  // embedded by every PDF viewer/parser, no font-subsetting risk. Defaults
+  // to Helvetica if omitted.
+  fontFamily?: "Helvetica" | "Times-Roman";
+  fontFamilyBold?: "Helvetica-Bold" | "Times-Bold";
+  // Section headers default to a literal uppercase string (ATS-safe: the
+  // embedded text matches what's on screen regardless of how a given parser
+  // handles CSS transforms). A styled, non-ATS template can opt into
+  // sentence case — still safe there since it passes its own literally-cased
+  // heading text in, never relying on this transform to produce it.
+  sectionHeaderCase?: "uppercase" | "none";
 }
 
 export const ATS_THEME: ResumeTheme = { ink: "#000000", muted: "#333333", accent: "#000000", headerRule: "line" };
@@ -24,9 +46,12 @@ interface Props {
 }
 
 export function useSharedStyles({ scale, theme }: Props) {
+  const regular = theme.fontFamily ?? "Helvetica";
+  const bold = theme.fontFamilyBold ?? "Helvetica-Bold";
+
   return StyleSheet.create({
     page: {
-      fontFamily: "Helvetica",
+      fontFamily: regular,
       fontSize: scale.fontSize.body,
       color: theme.ink,
       paddingVertical: scale.page.paddingVertical,
@@ -34,15 +59,21 @@ export function useSharedStyles({ scale, theme }: Props) {
       lineHeight: scale.lineHeight,
     },
     name: {
-      fontFamily: "Helvetica-Bold",
+      fontFamily: bold,
       fontSize: scale.fontSize.name,
       color: theme.ink,
       marginBottom: scale.gap.afterName,
+      // Fixed, generous line-height regardless of density — the page-wide
+      // scale.lineHeight is tuned for compact multi-line body text, and is
+      // too tight for a single large bold heading: at veryCompact (1.16) a
+      // 17pt bold glyph's descenders can visually crowd the line below it.
+      lineHeight: 1.3,
     },
     headline: {
       fontSize: scale.fontSize.headline,
       color: theme.muted,
       marginBottom: scale.gap.afterHeadline,
+      lineHeight: 1.3,
     },
     contactLine: {
       fontSize: scale.fontSize.small,
@@ -55,37 +86,33 @@ export function useSharedStyles({ scale, theme }: Props) {
       marginBottom: scale.gap.afterSummary,
     },
     sectionHeader: {
-      fontFamily: "Helvetica-Bold",
+      fontFamily: bold,
       fontSize: scale.fontSize.sectionHeader,
-      color: theme.headerRule === "color" ? theme.accent : theme.ink,
-      textTransform: "uppercase",
+      color: theme.headerRule === "color" || theme.headerRule === "both" ? theme.accent : theme.ink,
+      textTransform: theme.sectionHeaderCase === "none" ? "none" : "uppercase",
       letterSpacing: 0.6,
       marginTop: scale.gap.sectionTop,
       marginBottom: scale.gap.afterSectionHeader,
       ...(theme.headerRule === "line"
         ? { paddingBottom: 3, borderBottom: `1pt solid ${theme.ink}` }
         : {}),
+      ...(theme.headerRule === "both"
+        ? { paddingBottom: 3, borderBottom: `1pt solid ${theme.accent}` }
+        : {}),
     },
     entry: {
       marginBottom: scale.gap.betweenEntries,
     },
-    entryTitleRow: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-    },
     entryTitle: {
-      fontFamily: "Helvetica-Bold",
+      fontFamily: bold,
       fontSize: scale.fontSize.entryTitle,
       color: theme.ink,
+      lineHeight: 1.25, // same reasoning as name/headline — a wrapped long title needs breathing room
     },
     entryMeta: {
       fontSize: scale.fontSize.small,
       color: theme.muted,
       marginBottom: scale.gap.withinEntry,
-    },
-    entryDates: {
-      fontSize: scale.fontSize.small,
-      color: theme.muted,
     },
     bullet: {
       fontSize: scale.fontSize.body,
@@ -104,7 +131,7 @@ export function useSharedStyles({ scale, theme }: Props) {
       marginBottom: scale.gap.withinEntry,
     },
     skillLabel: {
-      fontFamily: "Helvetica-Bold",
+      fontFamily: bold,
       color: theme.headerRule === "color" ? theme.accent : theme.ink,
     },
   });
@@ -112,6 +139,29 @@ export function useSharedStyles({ scale, theme }: Props) {
 
 export function SectionHeader({ children, styles }: { children: string; styles: ReturnType<typeof useSharedStyles> }) {
   return <Text style={styles.sectionHeader}>{children}</Text>;
+}
+
+// Title on its own line, meta (location · dates) on the next. Deliberately
+// NOT a flex row with the title on the left and dates pinned right — a long
+// job title or company name (verified with a 100+ character title in
+// testing) wraps to two lines, and a sibling positioned by
+// justifyContent: "space-between" on that same row visually collides with
+// the wrapped second line. Stacking is unconditionally safe at any length.
+export function EntryHeading({
+  title,
+  meta,
+  styles,
+}: {
+  title: string;
+  meta?: string | null;
+  styles: ReturnType<typeof useSharedStyles>;
+}) {
+  return (
+    <>
+      <Text style={styles.entryTitle}>{title}</Text>
+      {meta && <Text style={styles.entryMeta}>{meta}</Text>}
+    </>
+  );
 }
 
 // Real text bullets ("• line") — never SVG shapes, never images. Falls back
@@ -133,4 +183,68 @@ export function BulletList({ text, styles }: { text: string | null; styles: Retu
 export function TechLine({ tech, styles }: { tech: string[]; styles: ReturnType<typeof useSharedStyles> }) {
   if (tech.length === 0) return null;
   return <Text style={styles.entryTech}>Technologies: {tech.join(", ")}</Text>;
+}
+
+// Opt-in emphasis variants of the plain text/bullet primitives above — used
+// only by templates that want **bold**-marked spans rendered as real bold
+// text (see format.ts:parseInlineBold). Separate components rather than new
+// params on Text/BulletList so every existing template's plain-text
+// rendering is untouched.
+export function InlineBoldText({
+  text,
+  style,
+  boldFontFamily,
+}: {
+  text: string;
+  style: TextStyleProp;
+  boldFontFamily: string;
+}) {
+  const segments = parseInlineBold(text);
+  return (
+    <Text style={style}>
+      {segments.map((seg, i) =>
+        seg.bold ? (
+          <Text key={i} style={{ fontFamily: boldFontFamily }}>
+            {seg.text}
+          </Text>
+        ) : (
+          seg.text
+        ),
+      )}
+    </Text>
+  );
+}
+
+export function InlineBoldBulletList({
+  text,
+  styles,
+  boldFontFamily,
+}: {
+  text: string | null;
+  styles: ReturnType<typeof useSharedStyles>;
+  boldFontFamily: string;
+}) {
+  const bullets = toBullets(text);
+  if (bullets.length === 0) return null;
+  return (
+    <>
+      {bullets.map((line, i) => {
+        const segments = parseInlineBold(line);
+        return (
+          <Text key={i} style={styles.bullet}>
+            •{" "}
+            {segments.map((seg, j) =>
+              seg.bold ? (
+                <Text key={j} style={{ fontFamily: boldFontFamily }}>
+                  {seg.text}
+                </Text>
+              ) : (
+                seg.text
+              ),
+            )}
+          </Text>
+        );
+      })}
+    </>
+  );
 }

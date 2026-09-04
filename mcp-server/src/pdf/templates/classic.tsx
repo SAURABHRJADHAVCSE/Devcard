@@ -1,27 +1,26 @@
 import { Document, Page, View, Text } from "@react-pdf/renderer";
 import type { FullProfile } from "../../db/get-full-profile";
 import { parseJsonArray, SKILL_CATEGORY_LABELS, dateRange } from "../format";
-import { ATS_THEME, useSharedStyles, SectionHeader, EntryHeading, BulletList, TechLine } from "../primitives";
+import { useSharedStyles, SectionHeader, EntryHeading, BulletList, TechLine, type ResumeTheme } from "../primitives";
 import type { Density } from "../density";
 import { getDensityScale } from "../density";
 
-// ATS (Applicant Tracking System) parsers read a PDF's text left-to-right,
-// top-to-bottom, in the order it's drawn. Every rule here exists to keep
-// that reading order linear and unambiguous:
-// - Single column only — no side-by-side sections (a sidebar + main body
-//   often gets read as one interleaved, scrambled column of text).
-// - Base-14 "Helvetica" — always embedded in the PDF viewer/parser itself,
-//   no font subsetting quirks that can occasionally trip up text extraction.
-// - No tables, no icons-as-content, no text inside images.
-// - Section headers are literal uppercase strings (not CSS text-transform)
-//   with a plain rule beneath — the embedded text matches what's on screen
-//   regardless of how a given parser handles CSS transforms.
-// - Title/company on their own line, location · dates stacked below (see
-//   EntryHeading) — never a flex row, which breaks when the title wraps.
-// - Reading order: Name, Title, Contact, Summary, Experience, Skills,
-//   Projects, Education, Certifications.
-export function AtsResume({ full, density = "comfortable" }: { full: FullProfile; density?: Density }) {
-  const styles = useSharedStyles({ scale: getDensityScale(density), theme: ATS_THEME });
+// Times-Roman instead of Helvetica — still a base-14 font embedded in every
+// PDF viewer by default, so exactly as ATS-safe as the "ats" template. Same
+// structure and headerRule: "line" (black, no color dependency); the only
+// difference from "ats" is the serif typeface, for anyone who wants the
+// traditional-resume look without giving up parseability.
+const CLASSIC_THEME: ResumeTheme = {
+  ink: "#000000",
+  muted: "#3a3a3a",
+  accent: "#000000",
+  headerRule: "line",
+  fontFamily: "Times-Roman",
+  fontFamilyBold: "Times-Bold",
+};
+
+export function ClassicResume({ full, density = "comfortable" }: { full: FullProfile; density?: Density }) {
+  const styles = useSharedStyles({ scale: getDensityScale(density), theme: CLASSIC_THEME });
   const { profile: p, skills, experiences, projects, education, certifications } = full;
 
   const contact = [p?.email, p?.phone, p?.location, p?.website, p?.github, p?.linkedin]

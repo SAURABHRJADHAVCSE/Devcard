@@ -3,6 +3,7 @@ import { PDFDocument } from "pdf-lib";
 import type { FullProfile } from "../db/get-full-profile";
 import { DENSITY_ORDER, type Density } from "./density";
 import { getTemplate } from "./registry";
+import "./setup"; // registers the no-mid-word-hyphenation callback
 
 export interface RenderResult {
   buffer: Buffer;
@@ -24,7 +25,13 @@ export async function renderResumePdf(templateId: string | undefined, full: Full
 
   for (const density of DENSITY_ORDER) {
     const buffer = await renderToBuffer(template.render(full, density));
-    const doc = await PDFDocument.load(buffer);
+    // updateMetadata: false — otherwise pdf-lib's own constructor stamps its
+    // signature into Producer/Creator on load, purely for having read the
+    // file. We only read getPageCount() here and return react-pdf's
+    // original, untouched buffer, so that stamping would be silently
+    // misleading if left on (it never reaches the served bytes either way,
+    // but there's no reason to let pdf-lib rewrite metadata we don't use).
+    const doc = await PDFDocument.load(buffer, { updateMetadata: false });
     const pageCount = doc.getPageCount();
     last = { buffer, pageCount, density };
 

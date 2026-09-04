@@ -1,16 +1,17 @@
-import { User, MessageSquare, RefreshCw, Sun, Moon } from "lucide-react";
+import { User, MessageSquare, RefreshCw, FileStack, Sun, Moon } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "cn";
 import { useTheme } from "@/lib/theme";
 
-export type Page = "profile" | "chat" | "sync";
+export type Page = "profile" | "chat" | "sync" | "resumes";
 
 const NAV: { page: Page; label: string; icon: LucideIcon }[] = [
   { page: "profile", label: "Knowledge base", icon: User },
   { page: "chat", label: "Chat update", icon: MessageSquare },
   { page: "sync", label: "Sync status", icon: RefreshCw },
+  { page: "resumes", label: "Resumes", icon: FileStack },
 ];
 
 export function Sidebar({ page, onNavigate }: { page: Page; onNavigate: (p: Page) => void }) {

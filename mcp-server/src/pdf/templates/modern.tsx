@@ -1,7 +1,7 @@
 import { Document, Page, View, Text } from "@react-pdf/renderer";
 import type { FullProfile } from "../../db/get-full-profile";
 import { parseJsonArray, SKILL_CATEGORY_LABELS, dateRange } from "../format";
-import { useSharedStyles, SectionHeader, BulletList, TechLine, type ResumeTheme } from "../primitives";
+import { useSharedStyles, SectionHeader, EntryHeading, BulletList, TechLine, type ResumeTheme } from "../primitives";
 import type { Density } from "../density";
 import { getDensityScale } from "../density";
 
@@ -42,19 +42,16 @@ export function ModernResume({ full, density = "comfortable" }: { full: FullProf
         {experiences.length > 0 && (
           <View>
             <SectionHeader styles={styles}>WORK EXPERIENCE</SectionHeader>
-            {experiences.map((e) => (
-              <View key={e.id} style={styles.entry} wrap={false}>
-                <View style={styles.entryTitleRow}>
-                  <Text style={styles.entryTitle}>
-                    {e.role}, {e.company}
-                  </Text>
-                  <Text style={styles.entryDates}>{dateRange(e.startDate, e.endDate, e.isCurrent)}</Text>
+            {experiences.map((e) => {
+              const meta = [e.location, dateRange(e.startDate, e.endDate, e.isCurrent)].filter(Boolean).join("   ·   ");
+              return (
+                <View key={e.id} style={styles.entry} wrap={false}>
+                  <EntryHeading title={`${e.role}, ${e.company}`} meta={meta} styles={styles} />
+                  <BulletList text={e.description} styles={styles} />
+                  <TechLine tech={parseJsonArray(e.techUsed)} styles={styles} />
                 </View>
-                {e.location && <Text style={styles.entryMeta}>{e.location}</Text>}
-                <BulletList text={e.description} styles={styles} />
-                <TechLine tech={parseJsonArray(e.techUsed)} styles={styles} />
-              </View>
-            ))}
+              );
+            })}
           </View>
         )}
 
@@ -86,15 +83,17 @@ export function ModernResume({ full, density = "comfortable" }: { full: FullProf
         {education.length > 0 && (
           <View>
             <SectionHeader styles={styles}>EDUCATION</SectionHeader>
-            {education.map((ed) => (
-              <View key={ed.id} style={styles.entry} wrap={false}>
-                <View style={styles.entryTitleRow}>
-                  <Text style={styles.entryTitle}>{[ed.degree, ed.field].filter(Boolean).join(" in ")}</Text>
-                  <Text style={styles.entryDates}>{[ed.startYear, ed.endYear].filter(Boolean).join(" – ")}</Text>
+            {education.map((ed) => {
+              const degreeLine = [ed.degree, ed.field].filter(Boolean).join(" in ") || ed.institution;
+              const meta = [degreeLine !== ed.institution ? ed.institution : null, [ed.startYear, ed.endYear].filter(Boolean).join(" – ")]
+                .filter(Boolean)
+                .join("   ·   ");
+              return (
+                <View key={ed.id} style={styles.entry} wrap={false}>
+                  <EntryHeading title={degreeLine} meta={meta} styles={styles} />
                 </View>
-                <Text style={styles.entryMeta}>{ed.institution}</Text>
-              </View>
-            ))}
+              );
+            })}
           </View>
         )}
 

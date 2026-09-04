@@ -3,7 +3,6 @@ import { FileText, LayoutGrid, Mail, MapPin, Globe, Link } from "lucide-react";
 import { getProfile, getResumeMarkdown } from "@/lib/api";
 import type { FullProfile } from "@/lib/types";
 import { MarkdownView } from "@/components/MarkdownView";
-import { DownloadResume } from "@/components/DownloadResume";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -217,7 +216,6 @@ export function ProfilePage() {
             <FileText size={14} /> Markdown
           </TabsTrigger>
         </TabsList>
-        <DownloadResume />
       </div>
 
       <TabsContent value="cards">
