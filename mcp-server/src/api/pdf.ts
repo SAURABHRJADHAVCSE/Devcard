@@ -4,6 +4,7 @@ import { getResumeVersion } from "../db/resume-versions";
 import { PDF_TEMPLATES } from "../pdf/registry";
 import { renderResumePdf } from "../pdf/render";
 import { applyResumeVersion } from "../pdf/tailor";
+import { resumeFilename } from "../pdf/format";
 
 export const pdfRouter = new Hono();
 
@@ -28,7 +29,7 @@ pdfRouter.get("/", async (c) => {
 
   const { buffer, pageCount, fitOnePage } = await renderResumePdf(template, toRender);
 
-  const filename = `${(full.profile?.name || "resume").replace(/[^a-z0-9]+/gi, "-").toLowerCase()}.pdf`;
+  const filename = resumeFilename(full.profile?.name);
   // Default is a real download (attachment) — the dashboard's resume
   // previewer opts into `?disposition=inline` so the browser renders the
   // PDF in an <iframe> instead of triggering a save dialog.

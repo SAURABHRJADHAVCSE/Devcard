@@ -30,6 +30,17 @@ export function normalizeUrl(url: string): string {
   return /^https?:\/\//i.test(url) ? url : `https://${url}`;
 }
 
+// "FirstName-LastName-Resume.pdf" per standard convention — Title Case each
+// word, hyphenate, append "-Resume". Falls back to "Resume.pdf" for a blank
+// name rather than producing a stray leading/trailing hyphen.
+export function resumeFilename(name: string | null | undefined): string {
+  const words = (name ?? "")
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1));
+  return words.length > 0 ? `${words.join("-")}-Resume.pdf` : "Resume.pdf";
+}
+
 // The DB stores one free-text `description` per experience/project (not a
 // bullets array) — splitting on newlines gets bullet-style output for
 // anyone who writes one achievement per line, without a schema migration.

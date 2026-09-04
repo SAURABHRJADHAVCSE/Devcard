@@ -5,6 +5,7 @@ import { getResumeVersion } from "../../db/resume-versions";
 import { renderResumePdf } from "../../pdf/render";
 import { applyResumeVersion } from "../../pdf/tailor";
 import { PDF_TEMPLATES } from "../../pdf/registry";
+import { resumeFilename } from "../../pdf/format";
 
 // There's no PDF file sitting on disk to "edit" — it's rendered fresh from
 // the profile every time. So "editing the resume PDF" from Claude means
@@ -55,7 +56,7 @@ export function registerPdfTools(server: McpServer) {
       }
 
       const result = await renderResumePdf(resolvedTemplate, merged);
-      const filename = `${(full.profile?.name || "resume").replace(/[^a-z0-9]+/gi, "-").toLowerCase()}.pdf`;
+      const filename = resumeFilename(full.profile?.name);
 
       return {
         content: [

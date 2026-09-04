@@ -25,11 +25,17 @@ export interface ResumeTheme {
   // border. "both": colored text + a colored border — a styled option that
   // still keeps a clear rule under each heading.
   headerRule: "line" | "color" | "both";
-  // Base-14 PDF fonts only (Helvetica/Times/Courier + Bold) — always
-  // embedded by every PDF viewer/parser, no font-subsetting risk. Defaults
-  // to Helvetica if omitted.
-  fontFamily?: "Helvetica" | "Times-Roman";
-  fontFamilyBold?: "Helvetica-Bold" | "Times-Bold";
+  // Base-14 ("Helvetica"/"Times-Roman" + their distinct "-Bold" PostScript
+  // names) is the zero-risk default — always embedded by every PDF viewer/
+  // parser already, no subsetting risk. "Inter" is the one deliberate
+  // exception (see setup.ts for why WOFF specifically, and the extraction
+  // verification behind it) — it registers one family at two weights rather
+  // than two distinct family names, so a theme using it must also set
+  // fontWeightBold (typically 700); see resolveBoldStyle below for how the
+  // two schemes both resolve correctly.
+  fontFamily?: "Helvetica" | "Times-Roman" | "Inter";
+  fontFamilyBold?: "Helvetica-Bold" | "Times-Bold" | "Inter";
+  fontWeightBold?: number;
   // Section headers default to a literal uppercase string (ATS-safe: the
   // embedded text matches what's on screen regardless of how a given parser
   // handles CSS transforms). A styled, non-ATS template can opt into
@@ -40,6 +46,17 @@ export interface ResumeTheme {
 
 export const ATS_THEME: ResumeTheme = { ink: "#000000", muted: "#333333", accent: "#000000", headerRule: "line" };
 
+// Base-14 bold ("Helvetica-Bold") is a distinct PostScript name — just set
+// fontFamily to it. An embedded multi-weight family ("Inter") is one
+// registered family resolved by fontWeight instead — same family name as
+// regular, plus an explicit weight. Centralized here so useSharedStyles and
+// any template needing bold outside the shared styles (InlineBoldText's
+// nested spans) resolve it identically.
+export function resolveBoldStyle(theme: ResumeTheme): { fontFamily: string; fontWeight?: number } {
+  const fontFamily = theme.fontFamilyBold ?? "Helvetica-Bold";
+  return theme.fontWeightBold ? { fontFamily, fontWeight: theme.fontWeightBold } : { fontFamily };
+}
+
 interface Props {
   scale: DensityScale;
   theme: ResumeTheme;
@@ -47,7 +64,7 @@ interface Props {
 
 export function useSharedStyles({ scale, theme }: Props) {
   const regular = theme.fontFamily ?? "Helvetica";
-  const bold = theme.fontFamilyBold ?? "Helvetica-Bold";
+  const boldStyle = resolveBoldStyle(theme);
 
   return StyleSheet.create({
     page: {
@@ -59,7 +76,7 @@ export function useSharedStyles({ scale, theme }: Props) {
       lineHeight: scale.lineHeight,
     },
     name: {
-      fontFamily: bold,
+      ...boldStyle,
       fontSize: scale.fontSize.name,
       color: theme.ink,
       marginBottom: scale.gap.afterName,
@@ -86,7 +103,7 @@ export function useSharedStyles({ scale, theme }: Props) {
       marginBottom: scale.gap.afterSummary,
     },
     sectionHeader: {
-      fontFamily: bold,
+      ...boldStyle,
       fontSize: scale.fontSize.sectionHeader,
       color: theme.headerRule === "color" || theme.headerRule === "both" ? theme.accent : theme.ink,
       textTransform: theme.sectionHeaderCase === "none" ? "none" : "uppercase",
@@ -104,7 +121,7 @@ export function useSharedStyles({ scale, theme }: Props) {
       marginBottom: scale.gap.betweenEntries,
     },
     entryTitle: {
-      fontFamily: bold,
+      ...boldStyle,
       fontSize: scale.fontSize.entryTitle,
       color: theme.ink,
       lineHeight: 1.25, // same reasoning as name/headline — a wrapped long title needs breathing room
@@ -131,7 +148,7 @@ export function useSharedStyles({ scale, theme }: Props) {
       marginBottom: scale.gap.withinEntry,
     },
     skillLabel: {
-      fontFamily: bold,
+      ...boldStyle,
       color: theme.headerRule === "color" ? theme.accent : theme.ink,
     },
   });
@@ -201,18 +218,18 @@ export function TechLine({ tech, styles }: { tech: string[]; styles: ReturnType<
 export function InlineBoldText({
   text,
   style,
-  boldFontFamily,
+  boldStyle,
 }: {
   text: string;
   style: TextStyleProp;
-  boldFontFamily: string;
+  boldStyle: TextStyleProp;
 }) {
   const segments = parseInlineBold(text);
   return (
     <Text style={style}>
       {segments.map((seg, i) =>
         seg.bold ? (
-          <Text key={i} style={{ fontFamily: boldFontFamily }}>
+          <Text key={i} style={boldStyle}>
             {seg.text}
           </Text>
         ) : (
@@ -226,11 +243,11 @@ export function InlineBoldText({
 export function InlineBoldBulletList({
   text,
   styles,
-  boldFontFamily,
+  boldStyle,
 }: {
   text: string | null;
   styles: ReturnType<typeof useSharedStyles>;
-  boldFontFamily: string;
+  boldStyle: TextStyleProp;
 }) {
   const bullets = toBullets(text);
   if (bullets.length === 0) return null;
@@ -243,7 +260,7 @@ export function InlineBoldBulletList({
             •{" "}
             {segments.map((seg, j) =>
               seg.bold ? (
-                <Text key={j} style={{ fontFamily: boldFontFamily }}>
+                <Text key={j} style={boldStyle}>
                   {seg.text}
                 </Text>
               ) : (
