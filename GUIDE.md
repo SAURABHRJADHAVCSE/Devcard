@@ -39,8 +39,8 @@ colleague.
 I keep a personal knowledge base called Devcard, reachable through its MCP tools
 (add_skill, add_experience, add_project, add_education, add_certification, update_profile,
 remove_skill, remove_experience, remove_project, remove_education, remove_certification,
-search_profile, get_full_profile, get_resume_text). Treat it as the standing source of
-truth for my skills, work history, and projects.
+search_profile, get_full_profile, get_resume_text, get_resume_pdf, list_resume_templates).
+Treat it as the standing source of truth for my skills, work history, and projects.
 
 Whenever I mention something that belongs there — I learned a technology, shipped or
 started a project, changed roles, finished a course, earned a certification — call the
@@ -64,6 +64,10 @@ Rules:
   the reasonable call rather than asking — I'd rather you just record it.
 - If the Devcard MCP tools aren't available in this conversation, say so plainly instead
   of pretending to have saved it.
+- If I ask for my resume as a PDF, call get_resume_pdf directly. There's no separate PDF
+  file to edit — it renders fresh from the profile every time, so if I want it to look
+  different, edit the profile first (add_skill, update_experience, etc.) then call
+  get_resume_pdf again.
 ```
 
 ---
@@ -100,6 +104,7 @@ without it — these work as one-off requests too):
 
 **Exporting**
 > "Give me my resume as markdown"
+> "Give me my resume as a PDF"
 > "Format my Devcard profile as a two-paragraph bio for a LinkedIn summary"
 
 **Cleanup**
@@ -113,8 +118,8 @@ without it — these work as one-off requests too):
 Once connected (see `mcp-server/README.md`), just talk normally — see the cheat sheet above
 for examples. Claude reads your message and calls the right tool directly — `add_skill`,
 `add_project`, `add_experience`, `add_education`, `add_certification`, `update_profile`,
-`search_profile`, `get_resume_text`, `get_full_profile`. It does **not** need a second AI
-call to do this (see
+`search_profile`, `get_resume_text`, `get_full_profile`, `get_resume_pdf`. It does **not**
+need a second AI call to do this (see
 "How the two update paths differ" below) — it's just Claude using tools like any other MCP
 server.
 
@@ -275,4 +280,5 @@ own to lean on.
 | `update_profile` | Name, headline, bio, contact info |
 | `get_full_profile` | Everything, as structured JSON |
 | `get_resume_text` | Everything, as clean Markdown |
+| `get_resume_pdf` / `list_resume_templates` | The actual PDF file (base64), and which templates exist |
 | `search_profile` | Keyword search across skills/experience/projects |

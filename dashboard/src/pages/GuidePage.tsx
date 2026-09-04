@@ -11,8 +11,8 @@ import { Button } from "@/components/ui/button";
 const STANDING_INSTRUCTION = `I keep a personal knowledge base called Devcard, reachable through its MCP tools
 (add_skill, add_experience, add_project, add_education, add_certification, update_profile,
 remove_skill, remove_experience, remove_project, remove_education, remove_certification,
-search_profile, get_full_profile, get_resume_text). Treat it as the standing source of
-truth for my skills, work history, and projects.
+search_profile, get_full_profile, get_resume_text, get_resume_pdf, list_resume_templates).
+Treat it as the standing source of truth for my skills, work history, and projects.
 
 Whenever I mention something that belongs there — I learned a technology, shipped or
 started a project, changed roles, finished a course, earned a certification — call the
@@ -35,7 +35,11 @@ Rules:
 - If it's ambiguous whether something is a skill, a project, or a line of experience, make
   the reasonable call rather than asking — I'd rather you just record it.
 - If the Devcard MCP tools aren't available in this conversation, say so plainly instead
-  of pretending to have saved it.`;
+  of pretending to have saved it.
+- If I ask for my resume as a PDF, call get_resume_pdf directly. There's no separate PDF
+  file to edit — it renders fresh from the profile every time, so if I want it to look
+  different, edit the profile first (add_skill, update_experience, etc.) then call
+  get_resume_pdf again.`;
 
 interface Prompt {
   text: string;
@@ -90,6 +94,7 @@ const CHEAT_SHEET: { title: string; prompts: Prompt[] }[] = [
     title: "Exporting",
     prompts: [
       { text: "Give me my resume as markdown" },
+      { text: "Give me my resume as a PDF" },
       { text: "Format my Devcard profile as a two-paragraph bio for a LinkedIn summary" },
     ],
   },
