@@ -1,7 +1,7 @@
 import { Hono } from "hono";
-import { renderToBuffer } from "@react-pdf/renderer";
 import { getFullProfile } from "../db/get-full-profile";
-import { PDF_TEMPLATES, getTemplate } from "../pdf/registry";
+import { PDF_TEMPLATES } from "../pdf/registry";
+import { renderResumePdf } from "../pdf/render";
 
 export const pdfRouter = new Hono();
 
@@ -12,13 +12,16 @@ pdfRouter.get("/templates", (c) => {
 });
 
 pdfRouter.get("/", async (c) => {
-  const template = getTemplate(c.req.query("template"));
   const full = await getFullProfile();
-  const buffer = await renderToBuffer(template.render(full));
+  const { buffer, pageCount, fitOnePage } = await renderResumePdf(c.req.query("template"), full);
 
   const filename = `${(full.profile?.name || "resume").replace(/[^a-z0-9]+/gi, "-").toLowerCase()}.pdf`;
   return c.body(new Uint8Array(buffer), 200, {
     "Content-Type": "application/pdf",
     "Content-Disposition": `attachment; filename="${filename}"`,
+    // Informational only — lets a client warn "this didn't fit one page"
+    // without having to parse the PDF itself.
+    "X-Resume-Page-Count": String(pageCount),
+    "X-Resume-Fit-One-Page": String(fitOnePage),
   });
 });

@@ -1,96 +1,17 @@
-import { Document, Page, View, Text, StyleSheet } from "@react-pdf/renderer";
+import { Document, Page, View, Text } from "@react-pdf/renderer";
 import type { FullProfile } from "../../db/get-full-profile";
 import { parseJsonArray, SKILL_CATEGORY_LABELS, dateRange } from "../format";
+import { useSharedStyles, SectionHeader, BulletList, TechLine, type ResumeTheme } from "../primitives";
+import type { Density } from "../density";
+import { getDensityScale } from "../density";
 
-const BRAND = "#4f46e5";
-const BRAND_LIGHT = "#eef2ff";
-const INK = "#0f172a";
-const MUTED = "#64748b";
+const MODERN_THEME: ResumeTheme = { ink: "#0f172a", muted: "#64748b", accent: "#4f46e5", headerRule: "color" };
 
-// Same single-column, real-text structure as the ATS template — this is a
-// visual reskin, not a layout change, so it stays reasonably parseable even
-// though ATS-friendliness isn't the point of this one (use the "ats"
-// template for that).
-const styles = StyleSheet.create({
-  page: {
-    fontFamily: "Helvetica",
-    fontSize: 10.5,
-    color: INK,
-    paddingVertical: 40,
-    paddingHorizontal: 44,
-    lineHeight: 1.4,
-  },
-  name: {
-    fontFamily: "Helvetica-Bold",
-    fontSize: 24,
-    color: BRAND,
-    marginBottom: 3,
-  },
-  headline: {
-    fontSize: 12,
-    color: MUTED,
-    marginBottom: 7,
-  },
-  contactLine: {
-    fontSize: 9.5,
-    color: MUTED,
-    marginBottom: 14,
-  },
-  bio: {
-    fontSize: 10,
-    marginBottom: 16,
-  },
-  sectionHeader: {
-    fontFamily: "Helvetica-Bold",
-    fontSize: 11,
-    color: BRAND,
-    textTransform: "uppercase",
-    letterSpacing: 0.8,
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  entry: {
-    marginBottom: 10,
-    paddingLeft: 10,
-    borderLeft: `2pt solid ${BRAND_LIGHT}`,
-  },
-  entryTitleRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  entryTitle: {
-    fontFamily: "Helvetica-Bold",
-    fontSize: 10.5,
-  },
-  entryDates: {
-    fontSize: 9.5,
-    color: MUTED,
-  },
-  entrySubtitle: {
-    fontSize: 10,
-    color: MUTED,
-    marginBottom: 2,
-  },
-  entryBody: {
-    fontSize: 10,
-    marginTop: 2,
-  },
-  entryTech: {
-    fontSize: 9,
-    marginTop: 3,
-    color: BRAND,
-  },
-  skillLine: {
-    fontSize: 10,
-    marginBottom: 3,
-  },
-  skillLabel: {
-    fontFamily: "Helvetica-Bold",
-    color: BRAND,
-  },
-});
-
-export function ModernResume({ full }: { full: FullProfile }) {
+// Same shared primitives and structure as ats.tsx — this is a color reskin,
+// not a layout change, so it stays reasonably parseable even though "ats"
+// is the template to pick when ATS-friendliness is the priority.
+export function ModernResume({ full, density = "comfortable" }: { full: FullProfile; density?: Density }) {
+  const styles = useSharedStyles({ scale: getDensityScale(density), theme: MODERN_THEME });
   const { profile: p, skills, experiences, projects, education, certifications } = full;
 
   const contact = [p?.email, p?.phone, p?.location, p?.website, p?.github, p?.linkedin]
@@ -105,55 +26,58 @@ export function ModernResume({ full }: { full: FullProfile }) {
   }
 
   return (
-    <Document title={`${p?.name ?? "Resume"} — Resume`} author={p?.name ?? undefined}>
+    <Document
+      title={p?.name ? `${p.name} Resume` : "Resume"}
+      author={p?.name || undefined}
+      creator=""
+      producer=""
+      subject="Resume"
+    >
       <Page size="A4" style={styles.page}>
         <Text style={styles.name}>{p?.name || "Untitled Profile"}</Text>
         {p?.headline && <Text style={styles.headline}>{p.headline}</Text>}
         {contact.length > 0 && <Text style={styles.contactLine}>{contact}</Text>}
-        {p?.bio && <Text style={styles.bio}>{p.bio}</Text>}
+        {p?.bio && <Text style={styles.summary}>{p.bio}</Text>}
+
+        {experiences.length > 0 && (
+          <View>
+            <SectionHeader styles={styles}>WORK EXPERIENCE</SectionHeader>
+            {experiences.map((e) => (
+              <View key={e.id} style={styles.entry} wrap={false}>
+                <View style={styles.entryTitleRow}>
+                  <Text style={styles.entryTitle}>
+                    {e.role}, {e.company}
+                  </Text>
+                  <Text style={styles.entryDates}>{dateRange(e.startDate, e.endDate, e.isCurrent)}</Text>
+                </View>
+                {e.location && <Text style={styles.entryMeta}>{e.location}</Text>}
+                <BulletList text={e.description} styles={styles} />
+                <TechLine tech={parseJsonArray(e.techUsed)} styles={styles} />
+              </View>
+            ))}
+          </View>
+        )}
 
         {skills.length > 0 && (
           <View>
-            <Text style={styles.sectionHeader}>Skills</Text>
+            <SectionHeader styles={styles}>SKILLS</SectionHeader>
             {[...byCategory.entries()].map(([category, names]) => (
               <Text key={category} style={styles.skillLine}>
-                <Text style={styles.skillLabel}>{SKILL_CATEGORY_LABELS[category] ?? category}: </Text>
+                <Text style={styles.skillLabel}>{(SKILL_CATEGORY_LABELS[category] ?? category).toUpperCase()}: </Text>
                 {names.join(", ")}
               </Text>
             ))}
           </View>
         )}
 
-        {experiences.length > 0 && (
-          <View>
-            <Text style={styles.sectionHeader}>Experience</Text>
-            {experiences.map((e) => (
-              <View key={e.id} style={styles.entry} wrap={false}>
-                <View style={styles.entryTitleRow}>
-                  <Text style={styles.entryTitle}>
-                    {e.role} — {e.company}
-                  </Text>
-                  <Text style={styles.entryDates}>{dateRange(e.startDate, e.endDate, e.isCurrent)}</Text>
-                </View>
-                {e.description && <Text style={styles.entryBody}>{e.description}</Text>}
-                {parseJsonArray(e.techUsed).length > 0 && (
-                  <Text style={styles.entryTech}>{parseJsonArray(e.techUsed).join("  ·  ")}</Text>
-                )}
-              </View>
-            ))}
-          </View>
-        )}
-
         {projects.length > 0 && (
           <View>
-            <Text style={styles.sectionHeader}>Projects</Text>
+            <SectionHeader styles={styles}>PROJECTS</SectionHeader>
             {projects.map((proj) => (
               <View key={proj.id} style={styles.entry} wrap={false}>
                 <Text style={styles.entryTitle}>{proj.name}</Text>
-                {proj.description && <Text style={styles.entryBody}>{proj.description}</Text>}
-                {parseJsonArray(proj.tech).length > 0 && (
-                  <Text style={styles.entryTech}>{parseJsonArray(proj.tech).join("  ·  ")}</Text>
-                )}
+                <BulletList text={proj.description} styles={styles} />
+                <TechLine tech={parseJsonArray(proj.tech)} styles={styles} />
               </View>
             ))}
           </View>
@@ -161,16 +85,14 @@ export function ModernResume({ full }: { full: FullProfile }) {
 
         {education.length > 0 && (
           <View>
-            <Text style={styles.sectionHeader}>Education</Text>
+            <SectionHeader styles={styles}>EDUCATION</SectionHeader>
             {education.map((ed) => (
               <View key={ed.id} style={styles.entry} wrap={false}>
                 <View style={styles.entryTitleRow}>
                   <Text style={styles.entryTitle}>{[ed.degree, ed.field].filter(Boolean).join(" in ")}</Text>
-                  <Text style={styles.entryDates}>
-                    {[ed.startYear, ed.endYear].filter(Boolean).join(" – ")}
-                  </Text>
+                  <Text style={styles.entryDates}>{[ed.startYear, ed.endYear].filter(Boolean).join(" – ")}</Text>
                 </View>
-                <Text style={styles.entrySubtitle}>{ed.institution}</Text>
+                <Text style={styles.entryMeta}>{ed.institution}</Text>
               </View>
             ))}
           </View>
@@ -178,7 +100,7 @@ export function ModernResume({ full }: { full: FullProfile }) {
 
         {certifications.length > 0 && (
           <View>
-            <Text style={styles.sectionHeader}>Certifications</Text>
+            <SectionHeader styles={styles}>CERTIFICATIONS</SectionHeader>
             {certifications.map((c) => (
               <Text key={c.id} style={styles.skillLine}>
                 {c.name}

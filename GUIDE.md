@@ -123,6 +123,15 @@ standalone app window (own taskbar icon, no browser chrome).
   - **Markdown**: a clean resume-formatted export. Toggle **Edit** to tweak wording, **Copy**
     to grab it for pasting into an actual resume or cover letter. (Edits here are local only —
     they don't change your stored profile; use Chat update or Claude for that.)
+  - **Download PDF**: pick a template from the dropdown, click **Download PDF**. Two templates
+    ship today:
+    - **ATS Simple** (default) — single column, plain black text, no graphics or tables. Built
+      to parse cleanly in applicant tracking systems; verified by extracting its text and
+      confirming it reads in the same order as the visual layout.
+    - **Modern** — same content, with color accents for a human reader. Not ATS-optimized —
+      use ATS Simple for that.
+    More templates just need adding to `mcp-server/src/pdf/registry.ts`; the picker updates
+    itself.
 - **Chat update tab** — the same natural-language update flow as the extension, full-size,
   with visible history of what each message changed.
 - **Sync status tab** — which platforms (LinkedIn, Naukri, Indeed, Wellfound) have your
@@ -175,13 +184,21 @@ own to lean on.
 
 ## What's not built yet
 
-- **PDF resume generation** — `GET /api/pdf` is a stub, returns 501.
 - **Portfolio site export** — not started.
 - **LinkedIn adapter** — intentionally left as a stub (see the safety note above); it needs
   the most careful, rate-limited implementation of the four platforms.
 - **Naukri/Indeed/Wellfound selectors** — present but unverified; you'll need to inspect your
   own logged-in DevTools and fix the `SELECTORS` const in each `extension/entrypoints/content/
   platforms/*.ts` file.
+
+---
+
+## Quick reference: PDF export
+
+| Endpoint | What it does |
+|---|---|
+| `GET /api/pdf/templates` | Lists available templates (id, name, description, whether it's ATS-friendly) |
+| `GET /api/pdf?template=ats` | Downloads the resume PDF using that template (`ats` is the default if omitted) |
 
 ---
 

@@ -1,0 +1,366 @@
+import type { FullProfile } from "../src/db/get-full-profile";
+
+// Synthetic profiles — never touches the real database. Covers the
+// representative resume types + long-content edge cases from the audit
+// spec: fresher, mid-level (2-3 jobs), dense senior resume, and a
+// long-field stress test (long name/email/URLs/company names, 5+ bullets,
+// 30+ skills).
+
+function skill(name: string, category: string, i: number) {
+  return {
+    id: `sk-${i}`,
+    name,
+    category,
+    level: "advanced",
+    yearsOfExperience: 3,
+    addedAt: new Date(),
+  };
+}
+
+const fresher: FullProfile = {
+  profile: {
+    id: "me",
+    name: "Priya Sharma",
+    headline: "Computer Science Graduate",
+    bio: "Recent CS graduate passionate about backend systems and distributed computing. Built several full-stack projects during coursework and internships.",
+    email: "priya.sharma@example.com",
+    phone: "+91 98765 43210",
+    location: "Bengaluru, India",
+    website: null,
+    github: "github.com/priyasharma",
+    linkedin: "linkedin.com/in/priyasharma",
+    twitter: null,
+    updatedAt: new Date(),
+  },
+  skills: [
+    skill("Python", "language", 1),
+    skill("Java", "language", 2),
+    skill("React", "framework", 3),
+    skill("Git", "tool", 4),
+  ],
+  experiences: [
+    {
+      id: "exp-1",
+      company: "Acme Analytics",
+      role: "Software Engineering Intern",
+      description: "Built internal dashboards for the data team.\nAutomated a manual reporting workflow, saving ~5 hours/week.",
+      location: "Bengaluru, India (Remote)",
+      employmentType: "internship",
+      techUsed: JSON.stringify(["Python", "Flask", "PostgreSQL"]),
+      startDate: "2024-05",
+      endDate: "2024-07",
+      isCurrent: false,
+    },
+  ],
+  projects: [
+    {
+      id: "proj-1",
+      name: "Campus Marketplace",
+      description: "A web app for students to buy/sell used textbooks.\nHandled 200+ listings across a 3-month pilot.",
+      longDescription: null,
+      url: null,
+      github: "github.com/priyasharma/campus-marketplace",
+      tech: JSON.stringify(["React", "Node.js", "MongoDB"]),
+      status: "archived",
+      featured: true,
+      startDate: "2023-09",
+      endDate: "2023-12",
+    },
+  ],
+  education: [
+    {
+      id: "edu-1",
+      institution: "Indian Institute of Technology, Bombay",
+      degree: "B.Tech",
+      field: "Computer Science and Engineering",
+      startYear: 2020,
+      endYear: 2024,
+      gpa: 8.7,
+      activities: null,
+    },
+  ],
+  certifications: [],
+};
+
+const midLevel: FullProfile = {
+  profile: {
+    id: "me",
+    name: "Daniel Osei",
+    headline: "Backend Engineer",
+    bio: "Backend engineer with 4 years of experience building high-throughput APIs and event-driven systems in fintech.",
+    email: "daniel.osei@example.com",
+    phone: "+1 (415) 555-0182",
+    location: "San Francisco, CA",
+    website: "danielosei.dev",
+    github: "github.com/danielosei",
+    linkedin: "linkedin.com/in/danielosei",
+    twitter: null,
+    updatedAt: new Date(),
+  },
+  skills: [
+    skill("TypeScript", "language", 1),
+    skill("Go", "language", 2),
+    skill("Node.js", "framework", 3),
+    skill("PostgreSQL", "cloud", 4),
+    skill("AWS", "cloud", 5),
+    skill("Docker", "tool", 6),
+    skill("Kubernetes", "tool", 7),
+  ],
+  experiences: [
+    {
+      id: "exp-1",
+      company: "Fintrace Inc.",
+      role: "Senior Backend Engineer",
+      description:
+        "Led the redesign of the payments ingestion pipeline, cutting p99 latency by 42%.\nMentored two junior engineers and ran the on-call rotation for 6 months.\nDesigned a rate-limiting layer that reduced abuse-related incidents by 90%.",
+      location: "San Francisco, CA",
+      employmentType: "full-time",
+      techUsed: JSON.stringify(["Go", "PostgreSQL", "Kafka", "AWS"]),
+      startDate: "2023-02",
+      endDate: null,
+      isCurrent: true,
+    },
+    {
+      id: "exp-2",
+      company: "Ledgerly",
+      role: "Backend Engineer",
+      description:
+        "Built the reconciliation service handling 2M+ transactions/day.\nMigrated legacy cron jobs to an event-driven architecture using Kafka.",
+      location: "Remote",
+      employmentType: "full-time",
+      techUsed: JSON.stringify(["TypeScript", "Node.js", "Kafka"]),
+      startDate: "2021-06",
+      endDate: "2023-01",
+      isCurrent: false,
+    },
+    {
+      id: "exp-3",
+      company: "StartHub",
+      role: "Software Engineer",
+      description: "Built the MVP API for an early-stage marketplace startup as employee #4.",
+      location: "New York, NY",
+      employmentType: "full-time",
+      techUsed: JSON.stringify(["Node.js", "PostgreSQL"]),
+      startDate: "2020-01",
+      endDate: "2021-05",
+      isCurrent: false,
+    },
+  ],
+  projects: [
+    {
+      id: "proj-1",
+      name: "rate-limiter-go",
+      description: "An open-source sliding-window rate limiter for Go services, used internally at Fintrace.",
+      longDescription: null,
+      url: "ratelimiter.dev",
+      github: "github.com/danielosei/rate-limiter-go",
+      tech: JSON.stringify(["Go", "Redis"]),
+      status: "active",
+      featured: true,
+      startDate: "2023-08",
+      endDate: null,
+    },
+  ],
+  education: [
+    {
+      id: "edu-1",
+      institution: "University of Michigan",
+      degree: "B.S.",
+      field: "Computer Science",
+      startYear: 2016,
+      endYear: 2020,
+      gpa: null,
+      activities: null,
+    },
+  ],
+  certifications: [{ id: "cert-1", name: "AWS Certified Solutions Architect", issuer: "Amazon Web Services", issuedDate: "2022-04", expiresDate: null, credentialUrl: null }],
+};
+
+// Dense senior resume — stress test for one-page fitting: 4 jobs with 3-4
+// bullets each, 30+ skills, 2 projects, 2 certifications.
+const denseSenior: FullProfile = {
+  profile: {
+    id: "me",
+    name: "Elena Vasquez",
+    headline: "Staff Software Engineer",
+    bio: "Staff engineer with 12 years across distributed systems, developer platforms, and engineering leadership. Ex-Google, ex-Stripe. Led teams of up to 15 engineers.",
+    email: "elena.vasquez@example.com",
+    phone: "+1 (650) 555-0199",
+    location: "Seattle, WA",
+    website: "elenavasquez.io",
+    github: "github.com/elenavasquez",
+    linkedin: "linkedin.com/in/elenavasquez",
+    twitter: "twitter.com/elenacodes",
+    updatedAt: new Date(),
+  },
+  skills: [
+    "TypeScript", "JavaScript", "Go", "Python", "Rust", "Java", "C++", "SQL",
+    "React", "Next.js", "Node.js", "Express", "gRPC", "GraphQL",
+    "PostgreSQL", "MySQL", "MongoDB", "Redis", "Elasticsearch", "Kafka",
+    "AWS", "GCP", "Docker", "Kubernetes", "Terraform", "GitHub Actions",
+    "System Design", "Distributed Systems", "Technical Leadership", "Mentoring",
+  ].map((n, i) => skill(n, ["language","language","language","language","language","language","language","language","framework","framework","framework","framework","framework","framework","cloud","cloud","cloud","cloud","cloud","cloud","cloud","cloud","tool","tool","tool","tool","soft","soft","soft","soft"][i] ?? "tool", i)),
+  experiences: [
+    {
+      id: "exp-1",
+      company: "Stripe",
+      role: "Staff Software Engineer",
+      description:
+        "Owned the developer platform team's roadmap for API reliability, improving uptime from 99.95% to 99.99%.\nDesigned and rolled out a company-wide idempotency-key standard adopted by 40+ services.\nGrew and led a team of 8 engineers across two time zones.\nRepresented the platform org in quarterly technical reviews with executive leadership.",
+      location: "Seattle, WA",
+      employmentType: "full-time",
+      techUsed: JSON.stringify(["Go", "Kubernetes", "gRPC"]),
+      startDate: "2021-03",
+      endDate: null,
+      isCurrent: true,
+    },
+    {
+      id: "exp-2",
+      company: "Google",
+      role: "Senior Software Engineer",
+      description:
+        "Built core infrastructure for internal developer tooling used by 3,000+ engineers.\nReduced average build time across the monorepo by 35% via a targeted caching layer.\nOn-call lead for a Tier-1 production service for 18 months.",
+      location: "Mountain View, CA",
+      employmentType: "full-time",
+      techUsed: JSON.stringify(["C++", "Python", "Bazel"]),
+      startDate: "2017-07",
+      endDate: "2021-02",
+      isCurrent: false,
+    },
+    {
+      id: "exp-3",
+      company: "Amazon",
+      role: "Software Engineer II",
+      description:
+        "Shipped the fraud-detection scoring service for a payments team processing millions of transactions/day.\nMigrated a legacy monolith to microservices, cutting deploy time from 45 to 6 minutes.",
+      location: "Seattle, WA",
+      employmentType: "full-time",
+      techUsed: JSON.stringify(["Java", "DynamoDB", "SQS"]),
+      startDate: "2014-08",
+      endDate: "2017-06",
+      isCurrent: false,
+    },
+    {
+      id: "exp-4",
+      company: "Microsoft",
+      role: "Software Engineer",
+      description: "Contributed to the Azure DevOps pipelines team, focused on build agent reliability.",
+      location: "Redmond, WA",
+      employmentType: "full-time",
+      techUsed: JSON.stringify(["C#", ".NET"]),
+      startDate: "2012-06",
+      endDate: "2014-07",
+      isCurrent: false,
+    },
+  ],
+  projects: [
+    {
+      id: "proj-1",
+      name: "idempotency-standard",
+      description: "The open-sourced version of the idempotency-key middleware built at Stripe, now used by several fintech startups.",
+      longDescription: null,
+      url: "idempotency-standard.dev",
+      github: "github.com/elenavasquez/idempotency-standard",
+      tech: JSON.stringify(["Go"]),
+      status: "active",
+      featured: true,
+      startDate: "2022-01",
+      endDate: null,
+    },
+    {
+      id: "proj-2",
+      name: "distsys-reading-group",
+      description: "Organizer of a 200-member distributed-systems reading group; curated and led 40+ paper discussions.",
+      longDescription: null,
+      url: null,
+      github: null,
+      tech: JSON.stringify([]),
+      status: "active",
+      featured: false,
+      startDate: "2019-01",
+      endDate: null,
+    },
+  ],
+  education: [
+    {
+      id: "edu-1",
+      institution: "Carnegie Mellon University",
+      degree: "M.S.",
+      field: "Computer Science",
+      startYear: 2010,
+      endYear: 2012,
+      gpa: null,
+      activities: null,
+    },
+    {
+      id: "edu-2",
+      institution: "University of Texas at Austin",
+      degree: "B.S.",
+      field: "Computer Science",
+      startYear: 2006,
+      endYear: 2010,
+      gpa: null,
+      activities: null,
+    },
+  ],
+  certifications: [
+    { id: "cert-1", name: "Certified Kubernetes Administrator", issuer: "Cloud Native Computing Foundation", issuedDate: "2021-05", expiresDate: null, credentialUrl: null },
+    { id: "cert-2", name: "AWS Certified Solutions Architect - Professional", issuer: "Amazon Web Services", issuedDate: "2020-11", expiresDate: null, credentialUrl: null },
+  ],
+};
+
+// Long-field stress test: very long name, email, URLs, company/job names,
+// and a job with 6 bullets — checks wrapping/overflow, not just density.
+const longContent: FullProfile = {
+  profile: {
+    id: "me",
+    name: "Alexandria Konstantinopoulos-Featherstonehaugh",
+    headline: "Principal Full-Stack Software Engineer & Distributed Systems Architect",
+    bio: "Specializing in large-scale distributed systems architecture, with a focus on building resilient, horizontally-scalable platforms for high-traffic consumer applications serving tens of millions of monthly active users worldwide.",
+    email: "alexandria.konstantinopoulos.featherstonehaugh@some-extremely-long-corporate-domain-name.example.com",
+    phone: "+44 20 7946 0958",
+    location: "London, United Kingdom",
+    website: "https://www.alexandria-konstantinopoulos-featherstonehaugh-portfolio.example.com",
+    github: "github.com/alexandria-konstantinopoulos-featherstonehaugh",
+    linkedin: "linkedin.com/in/alexandria-konstantinopoulos-featherstonehaugh-principal-engineer",
+    twitter: null,
+    updatedAt: new Date(),
+  },
+  skills: Array.from({ length: 32 }, (_, i) => skill(`Skill${i + 1}WithAReasonablyLongName`, "tool", i)),
+  experiences: [
+    {
+      id: "exp-1",
+      company: "International Consolidated Financial Technology Holdings Group PLC",
+      role: "Principal Distributed Systems Architect and Engineering Standards Lead",
+      description:
+        "First achievement bullet describing a measurable, quantified impact on system reliability.\nSecond achievement bullet describing a leadership responsibility across multiple teams.\nThird achievement bullet describing a technical migration project with concrete numbers.\nFourth achievement bullet about mentoring and technical standards work.\nFifth achievement bullet about cross-functional stakeholder management.\nSixth achievement bullet about a cost-optimization initiative that saved a specific dollar amount.",
+      location: "London, United Kingdom (Hybrid, 2 days/week onsite)",
+      employmentType: "full-time",
+      techUsed: JSON.stringify(["TypeScript", "Go", "Kubernetes", "PostgreSQL", "Kafka", "Terraform", "AWS", "GCP"]),
+      startDate: "2019-01",
+      endDate: null,
+      isCurrent: true,
+    },
+  ],
+  projects: [],
+  education: [
+    {
+      id: "edu-1",
+      institution: "The Massachusetts Institute of Technology, Department of Electrical Engineering and Computer Science",
+      degree: "Ph.D.",
+      field: "Computer Science, specializing in Distributed Systems and Fault-Tolerant Computing",
+      startYear: 2007,
+      endYear: 2012,
+      gpa: null,
+      activities: null,
+    },
+  ],
+  certifications: [],
+};
+
+export const FIXTURES: { name: string; profile: FullProfile }[] = [
+  { name: "fresher", profile: fresher },
+  { name: "mid-level (3 jobs)", profile: midLevel },
+  { name: "dense senior (4 jobs, 30 skills)", profile: denseSenior },
+  { name: "long-content stress test", profile: longContent },
+];
