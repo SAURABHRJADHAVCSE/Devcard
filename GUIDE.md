@@ -69,7 +69,9 @@ Rules:
 - If I ask for my resume as a PDF, call get_resume_pdf directly. There's no separate PDF
   file to edit — it renders fresh from the profile every time, so if I want it to look
   different, edit the profile first (add_skill, update_experience, etc.) then call
-  get_resume_pdf again.
+  get_resume_pdf again. Its response includes a direct download link — always share that
+  link with me, since some MCP clients (Claude Desktop, as of now) can't surface the file
+  itself directly in chat.
 - If I give you a job description, use tailor_resume, then show me its missingSkills before
   including any of them — never add a skill I haven't confirmed I actually have, and never
   add it to the real knowledge base even after I confirm, only to that resume version.
@@ -167,16 +169,39 @@ standalone app window (own taskbar icon, no browser chrome).
     for that.)
 - **Resumes tab** — a card per template, each with a live inline preview and its own
   **Open full size** / **Download PDF** buttons. Only one template is registered right now:
-  - **Polished** (default) — centered header, dark-navy accents, colored section rules,
-    standard section headings ("Professional Summary", "Work Experience"), and technical
-    skills placed right after the summary — ahead of experience, per standard developer-resume
-    guidance. Website/GitHub/LinkedIn links and project URLs render as real clickable PDF
-    hyperlinks, not just colored text. Also the only template that renders `**bold**`-marked
-    spans in your bio/bullet text as real bold emphasis (write `**like this**` in a description
-    to have specific phrases stand out). Title/dates stay stacked rather than right-aligned on
-    one line — a right-aligned row was tried and measured (see `primitives.tsx:EntryHeading`):
-    it looks fine on screen but corrupts ATS reading order, so it was reverted. Not
-    ATS-optimized overall (relies on color for section headers).
+  - **Polished** (default) — centered header, Inter typeface, dark-navy accents (`#1a2e4a`),
+    colored section rules (no underline on the real hyperlinks — an earlier default-underline
+    rendering artifact was removed), standard section headings ("Professional Summary", "Work
+    Experience"), single-line contact info (facts + real hyperlinked links together), and
+    technical skills placed right after the summary — ahead of experience, per standard
+    developer-resume guidance. Website/GitHub/LinkedIn links and project URLs render as real
+    clickable PDF hyperlinks, not just colored text. Also the only template that renders
+    `**bold**`-marked spans in your bio/bullet text as real bold emphasis (write `**like
+    this**` in a description to have specific phrases stand out). Title/dates stay stacked
+    rather than right-aligned on one line — a right-aligned row was tried and measured (see
+    `primitives.tsx:EntryHeading`): it looks fine on screen but corrupts ATS reading order, so
+    it was reverted. Downloads as `FirstName-LastName-Resume.pdf`. Not ATS-optimized overall
+    (relies on color for section headers, and Inter is embedded rather than a base-14 font —
+    see below).
+
+    **Content is curated, not just laid out**, to help real content actually fit one page:
+    Education shows only your single highest/most recent entry (standard practice once you
+    have a degree and work experience — a Bachelor's implies the high school behind it), and
+    Projects shows only the ones flagged `featured` in your profile (falls back to showing all
+    of them if none are flagged). Both apply automatically to a plain live-profile render; for
+    a saved resume version, an explicit `projectNames` curation from tailoring is always
+    respected exactly as chosen, even if it names a non-featured project — see
+    `pdf/tailor.ts:applyResumeVersion`, which every render path calls unconditionally (with no
+    version, not just when one exists) specifically so this default and an explicit
+    curation can't step on each other.
+
+    **Inter is embedded, not base-14** — the one deliberate exception to the base-14-only rule
+    every other template follows, added by explicit request. Verified before shipping, not
+    assumed: WOFF2 crashes fontkit's glyph embedding outright, but plain WOFF embeds cleanly
+    and `pdftotext` extraction — including classic ligature-prone words ("office", "fluffy",
+    "waffle") — comes back correct (see `mcp-server/src/pdf/setup.ts`). Adds real file weight
+    (~25KB for a full resume vs. a few KB unembedded) — still trivial for any upload/email
+    limit, but worth knowing it's there.
 
   Four other templates (ATS Simple, Classic, Modern, Executive) were built during the earlier
   ATS audit and are still sitting, working and tested, in `mcp-server/src/pdf/templates/` — just
@@ -185,16 +210,26 @@ standalone app window (own taskbar icon, no browser chrome).
   import + registry entry, no rewrite needed.
 
   Every template shares one underlying layout engine (`mcp-server/src/pdf/`): real selectable
-  text (never rasterized), correct top-to-bottom reading order, base-14 fonts only (so nothing
-  depends on font embedding), and blank PDF creator/producer metadata (no tool branding in the
-  file). Margins (0.5–0.6in), line-height (1.15–1.25), and font sizes (name 18–22pt, section
-  headers 13–14pt, body 10–11pt) are pinned to standard resume-design ranges and held constant
-  across densities in `density.ts` — a resume auto-fits to one page by progressively
-  tightening *inter-element spacing* through three density tiers first, and only prints as two
-  pages if content still doesn't fit at the tightest tier without breaking those ranges (this
-  is expected/normal for an extensive-experience resume, not a bug). Run `bun run test` in
-  `mcp-server/` to re-validate whatever's currently registered against a set of synthetic
-  resume fixtures (short/medium/dense/long-content) any time the PDF code changes.
+  text (never rasterized), correct top-to-bottom reading order (Polished's embedded-Inter
+  exception aside), and blank PDF creator/producer metadata (no tool branding in the file).
+  Margins (0.5–0.75in), line-height (1.15–1.25), and font sizes (name 20–24pt, section headers
+  11–12pt with slightly increased letter-spacing, job title/company 10.5–11pt, body 10–10.5pt,
+  dates/location 9.5–10pt) are pinned to specific resume-design ranges and held constant across
+  three density tiers (`comfortable`/`compact`/`veryCompact`) in `density.ts` — a resume
+  auto-fits to one page by progressively tightening *inter-element spacing* through those first
+  (4–6pt after a section header, 6–8pt between job entries — also pinned). A 4th tier,
+  `ultraCompact`, is a deliberate, explicitly-requested last resort tried only after those three
+  fail — one page is a hard requirement even when honest content volume doesn't fit within the
+  normal ranges, so this tier is allowed to dip slightly below them (down to ~9.5pt body, 1.1
+  line-height, ~0.44in/0.55in margins). Content curation (featured-only projects, single latest
+  education entry — see above) does most of the real work here in practice; `ultraCompact`
+  exists for whatever gap curation alone doesn't close. If a resume still doesn't fit even at
+  `ultraCompact`, it prints as two pages — genuinely too much content for one page at any
+  readable size, not something further shrinking should try to solve; trim content instead (per
+  the spec's own bullet-craft rules: 3–5 bullets per role, 1–2 lines each, cut anything without
+  a specific result). Run `bun run test` in `mcp-server/` to re-validate whatever's currently registered against a
+  set of synthetic resume fixtures (short/medium/dense/long-content) any time the PDF code
+  changes.
 
   Adding/re-enabling a template just needs an import plus one entry in
   `mcp-server/src/pdf/registry.ts`; the Resumes tab picks it up automatically.
@@ -315,7 +350,7 @@ own to lean on.
 | `update_profile` | Name, headline, bio, contact info |
 | `get_full_profile` | Everything, as structured JSON |
 | `get_resume_text` | Everything, as clean Markdown |
-| `get_resume_pdf` / `list_resume_templates` | The actual PDF file (base64), and which templates exist. `get_resume_pdf` takes an optional `versionId` |
+| `get_resume_pdf` / `list_resume_templates` | The actual PDF file (base64), and which templates exist. `get_resume_pdf` takes an optional `versionId`, and always also returns a direct `http://localhost:6366/api/pdf?...` download link as text — some MCP clients (Claude Desktop, as of now) don't surface the base64 file itself in chat, so the link is the reliable way to actually get the PDF |
 | `tailor_resume` | Analyzes a JD against the real profile; proposes summary/matchedSkills/missingSkills/suggestedProjects — saves nothing |
 | `save_resume_version` / `list_resume_versions` / `get_resume_version` / `remove_resume_version` | Save, list, inspect, and delete named tailored resume versions |
 | `search_profile` | Keyword search across skills/experience/projects |

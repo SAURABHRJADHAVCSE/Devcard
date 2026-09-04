@@ -40,9 +40,9 @@ export async function renderResumePdf(templateId: string | undefined, full: Full
     }
   }
 
-  // Even at veryCompact it didn't fit — that's a genuine "too much content"
-  // case (spec: handle it intelligently, don't destroy readability further
-  // by inventing a 4th, even-smaller density). Return the most compact
-  // attempt as-is; it'll be 2 pages, still fully readable.
+  // Not even ultraCompact (the deliberate below-normal-range last resort —
+  // see density.ts) fit one page. That's genuinely too much content for one
+  // page at any readable size; return the most compact attempt as-is, 2
+  // pages, still fully readable text.
   return { buffer: last!.buffer, density: last!.density, pageCount: last!.pageCount, fitOnePage: false };
 }

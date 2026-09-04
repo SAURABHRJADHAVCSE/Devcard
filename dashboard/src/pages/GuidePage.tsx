@@ -41,7 +41,9 @@ Rules:
 - If I ask for my resume as a PDF, call get_resume_pdf directly. There's no separate PDF
   file to edit — it renders fresh from the profile every time, so if I want it to look
   different, edit the profile first (add_skill, update_experience, etc.) then call
-  get_resume_pdf again.
+  get_resume_pdf again. Its response includes a direct download link — always share that
+  link with me, since some MCP clients (Claude Desktop, as of now) can't surface the file
+  itself directly in chat.
 - If I give you a job description, use tailor_resume, then show me its missingSkills before
   including any of them — never add a skill I haven't confirmed I actually have, and never
   add it to the real knowledge base even after I confirm, only to that resume version.`;

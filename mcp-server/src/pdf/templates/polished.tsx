@@ -50,6 +50,22 @@ export function PolishedResume({ full, density = "comfortable" }: { full: FullPr
   const contactParts = [p?.email, p?.phone, p?.location].filter((v): v is string => Boolean(v));
   const linkUrls = [p?.website, p?.github, p?.linkedin].filter((v): v is string => Boolean(v));
 
+  // Projects are already resolved by the caller before this template ever
+  // sees them — featured-only by default, or a saved version's explicit
+  // curation, see pdf/tailor.ts:applyResumeVersion (always called, not
+  // just when a version exists, precisely so this template doesn't need to
+  // duplicate that decision and risk re-filtering an explicit curation).
+
+  // Only the highest/most recent entry — standard practice once you have a
+  // degree plus work experience (a Bachelor's implies the high school and
+  // middle school behind it; listing all three just burns space that could
+  // go to real experience). Ties broken by startYear so a currently-in-
+  // progress degree (no endYear yet) still wins over a finished one.
+  const latestEducation =
+    education.length > 0
+      ? [...education].sort((a, b) => (b.endYear ?? b.startYear ?? 0) - (a.endYear ?? a.startYear ?? 0))[0]
+      : undefined;
+
   const byCategory = new Map<string, string[]>();
   for (const skill of skills) {
     const list = byCategory.get(skill.category) ?? [];
@@ -88,7 +104,7 @@ export function PolishedResume({ full, density = "comfortable" }: { full: FullPr
               {linkUrls.map((url, i) => (
                 <Fragment key={url}>
                   {i > 0 && "   ·   "}
-                  <Link src={normalizeUrl(url)} style={{ color: POLISHED_THEME.accent }}>
+                  <Link src={normalizeUrl(url)} style={{ color: POLISHED_THEME.accent, textDecoration: "none" }}>
                     {url}
                   </Link>
                 </Fragment>
@@ -139,7 +155,7 @@ export function PolishedResume({ full, density = "comfortable" }: { full: FullPr
               const title = proj.url ? (
                 <>
                   {proj.name}{" "}
-                  <Link src={normalizeUrl(proj.url)} style={{ color: POLISHED_THEME.accent }}>
+                  <Link src={normalizeUrl(proj.url)} style={{ color: POLISHED_THEME.accent, textDecoration: "none" }}>
                     {proj.url}
                   </Link>
                 </>
@@ -157,10 +173,11 @@ export function PolishedResume({ full, density = "comfortable" }: { full: FullPr
           </View>
         )}
 
-        {education.length > 0 && (
+        {latestEducation && (
           <View>
             <SectionHeader styles={styles}>Education</SectionHeader>
-            {education.map((ed) => {
+            {(() => {
+              const ed = latestEducation;
               const degreeLine = [ed.degree, ed.field].filter(Boolean).join(" in ") || ed.institution;
               const years = [ed.startYear, ed.endYear].filter(Boolean).join(" – ");
               const meta = [degreeLine !== ed.institution ? ed.institution : null, years].filter(Boolean).join("   ·   ");
@@ -169,7 +186,7 @@ export function PolishedResume({ full, density = "comfortable" }: { full: FullPr
                   <EntryHeading title={degreeLine} meta={meta} styles={styles} />
                 </View>
               );
-            })}
+            })()}
           </View>
         )}
 

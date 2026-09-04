@@ -14,6 +14,7 @@ import { execFileSync } from "child_process";
 import { PDFDocument } from "pdf-lib";
 import { PDF_TEMPLATES } from "../src/pdf/registry";
 import { renderResumePdf } from "../src/pdf/render";
+import { applyResumeVersion } from "../src/pdf/tailor";
 import { FIXTURES } from "./pdf-fixtures";
 
 let failures = 0;
@@ -56,7 +57,10 @@ async function main() {
     for (const template of PDF_TEMPLATES) {
       console.log(`\n=== ${template.id} :: ${fixtureName} ===`);
 
-      const result = await renderResumePdf(template.id, profile);
+      // Same resolution every real render path goes through (no version —
+      // see applyResumeVersion's comment on why this still matters even
+      // then) so this test suite validates what production actually does.
+      const result = await renderResumePdf(template.id, applyResumeVersion(profile));
       // updateMetadata: false — otherwise pdf-lib stamps its own Producer/
       // Creator into the in-memory parse just from loading it (even without
       // ever calling .save()), which would make this check a false

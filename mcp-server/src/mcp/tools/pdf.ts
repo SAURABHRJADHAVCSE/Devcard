@@ -44,22 +44,49 @@ export function registerPdfTools(server: McpServer) {
     async ({ template, versionId }) => {
       const full = await getFullProfile();
 
-      let merged = full;
+      let version;
       let resolvedTemplate = template;
       if (versionId) {
-        const version = await getResumeVersion(versionId);
+        version = await getResumeVersion(versionId);
         if (!version) {
           return { content: [{ type: "text", text: `No resume version with id ${versionId}` }] };
         }
-        merged = applyResumeVersion(full, version);
         resolvedTemplate = template ?? version.template ?? undefined;
       }
+      // Always resolved through applyResumeVersion, even with no version —
+      // see its comment: the "default to featured projects" behavior has
+      // to run for a plain live-profile render too, not just a saved one.
+      const merged = applyResumeVersion(full, version);
 
       const result = await renderResumePdf(resolvedTemplate, merged);
       const filename = resumeFilename(full.profile?.name);
 
+      // Claude Desktop's UI currently doesn't surface MCP EmbeddedResource
+      // blocks (the `resource`/blob content below) as a downloadable
+      // artifact at all — confirmed as a known, filed, client-side
+      // limitation (anthropics/claude-ai-mcp#287), not a bug in this
+      // server: the blob is spec-compliant and does reach the model, Desktop
+      // just has nowhere in its UI to hand it to the human yet. A direct
+      // HTTP link is the reliable fallback regardless of which MCP client
+      // is asking, so it's always included as text (which every client
+      // renders) — put it first, since for Desktop right now it's the ONLY
+      // part of this response a human can actually act on.
+      const port = process.env.PORT ?? "6366";
+      const query = versionId ? `version=${versionId}` : resolvedTemplate ? `template=${resolvedTemplate}` : "";
+      const downloadUrl = `http://localhost:${port}/api/pdf${query ? `?${query}` : ""}`;
+
       return {
         content: [
+          {
+            type: "text",
+            text:
+              `Generated ${filename} — ${result.density} density, ${result.pageCount} page${result.pageCount === 1 ? "" : "s"}${
+                result.fitOnePage ? "" : " (didn't fit one page even at the tightest density — content genuinely exceeds one page)"
+              }.\n\n` +
+              `Download it directly: ${downloadUrl}\n` +
+              `(Some MCP clients, including Claude Desktop as of now, can't surface the file this tool call also returns ` +
+              `directly in chat — this link always works instead, since it downloads straight from your local Devcard server.)`,
+          },
           {
             type: "resource",
             resource: {
@@ -67,12 +94,6 @@ export function registerPdfTools(server: McpServer) {
               mimeType: "application/pdf",
               blob: Buffer.from(result.buffer).toString("base64"),
             },
-          },
-          {
-            type: "text",
-            text: `Generated ${filename} — ${result.density} density, ${result.pageCount} page${result.pageCount === 1 ? "" : "s"}${
-              result.fitOnePage ? "" : " (didn't fit one page even at the tightest density — content genuinely exceeds one page)"
-            }.`,
           },
         ],
       };

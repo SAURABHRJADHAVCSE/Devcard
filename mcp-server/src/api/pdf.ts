@@ -18,14 +18,17 @@ pdfRouter.get("/", async (c) => {
   const full = await getFullProfile();
 
   const versionId = c.req.query("version");
-  let toRender = full;
+  let version;
   let template = c.req.query("template");
   if (versionId) {
-    const version = await getResumeVersion(versionId);
+    version = await getResumeVersion(versionId);
     if (!version) return c.json({ error: `No resume version with id ${versionId}` }, 404);
-    toRender = applyResumeVersion(full, version);
     template = template ?? version.template ?? undefined;
   }
+  // Always resolved through applyResumeVersion, even with no version — see
+  // its comment: the "default to featured projects" behavior has to run
+  // for a plain live-profile render too, not just a saved version.
+  const toRender = applyResumeVersion(full, version);
 
   const { buffer, pageCount, fitOnePage } = await renderResumePdf(template, toRender);
 

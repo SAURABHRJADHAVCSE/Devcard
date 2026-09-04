@@ -18,7 +18,7 @@ export const tailorJsonSchema = {
     summary: {
       type: "string",
       description:
-        "A 2-4 sentence professional summary tailored to the job description, built only from real facts already in the profile — no invented achievements, metrics, or technologies.",
+        "A 2-4 sentence professional summary tailored to the job description, built only from real facts already in the profile — no invented achievements, metrics, or technologies. Lead with the single most relevant, most impressive true fact rather than burying it; write in confident active voice (\"Built\", \"Led\", \"Reduced\" — never \"Was responsible for\" or \"Helped with\"); keep every sentence concrete and specific, never generic filler (\"hardworking team player\", \"passionate about technology\").",
     },
     matchedSkills: {
       type: "array",
@@ -50,6 +50,7 @@ You are given:
 
 Call ${TAILOR_TOOL_NAME} with:
 - summary: a tailored professional summary (2-4 sentences) built ONLY from real profile facts — years of experience, real technologies, real achievements already in the profile. Emphasize what's relevant to this job. Never invent a metric, technology, or achievement that isn't already somewhere in the profile. If the profile has too little relevant experience for this job, say so honestly rather than overselling.
+  Write it the way a strong resume bullet is written, not like a bio: lead with the single most relevant, most impressive true fact first — don't bury it in the middle or end. Use confident, active-voice verbs (Built, Shipped, Led, Reduced, Architected, Engineered) — never passive filler ("was responsible for", "helped with", "involved in"). If the profile already states a real number (a percentage, a user count, a time saved), keep it in the sentence, don't paraphrase it away into something vaguer. Cut generic claims a summary could make about anyone ("hardworking", "passionate about technology", "team player") — every sentence should say something only true of this specific person's actual background.
 - matchedSkills: skill names that exist in the profile's real skills list, ordered by relevance to this job (most relevant first).
 - missingSkills: skill names the job description or required-skills text asks for that are NOT in the profile's skills list.
 - suggestedProjects: project names from the profile's real projects list, ordered by relevance to this job (most relevant first).
