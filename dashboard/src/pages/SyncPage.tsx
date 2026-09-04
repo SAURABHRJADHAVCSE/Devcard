@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 
-const KNOWN_PLATFORMS = ["linkedin", "naukri", "indeed", "wellfound"];
+const KNOWN_PLATFORMS = ["naukri", "indeed", "wellfound"];
 
 function timeAgo(iso: string): string {
   const ms = Date.now() - new Date(iso).getTime();

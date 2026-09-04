@@ -1,30 +1,9 @@
-import type { FullProfile } from "@/lib/types";
-
-export interface SyncResult {
-  success: boolean;
-  fieldsUpdated: string[];
-  errors: string[];
-}
-
-export interface PlatformAdapter {
-  // Unique identifier used in sync-status tracking (matches the :platform
-  // param in POST /api/sync-status/:platform).
-  platform: string;
-
-  // True if the current URL is a profile edit page for this platform.
-  isProfileEditPage(): boolean;
-
-  // True if the current URL is a profile view page (to show an "Edit" prompt).
-  isProfileViewPage(): boolean;
-
-  // Given the full profile, fill in the current page's form fields.
-  syncProfile(profile: FullProfile): Promise<SyncResult>;
-}
-
-// Floating "Sync with Devcard" button injected on a platform's edit page.
-// Shared across adapters so every platform gets identical placement/styling
-// (Rule 4: adapters share zero state, but a UI affordance isn't state).
-export function injectSyncButton(onClick: () => void, label = "🧠 Sync with Devcard"): HTMLButtonElement {
+// Floating "Fill with Devcard" button injected into the page. Was
+// previously shared across per-platform adapters too (Rule 4: adapters
+// share zero state, but a UI affordance isn't state) — those adapters were
+// dropped by request in favor of the generic AI field mapper being this
+// content script's only fill mechanism, but the button itself is unchanged.
+export function injectSyncButton(onClick: () => void, label = "🧠 Fill with Devcard"): HTMLButtonElement {
   const existing = document.getElementById("resync-sync-button");
   if (existing) existing.remove();
 

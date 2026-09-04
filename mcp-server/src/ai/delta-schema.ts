@@ -57,6 +57,17 @@ export const deltaSchema = z.object({
       }),
     )
     .optional(),
+  addCertifications: z
+    .array(
+      z.object({
+        name: z.string(),
+        issuer: z.string().optional(),
+        issuedDate: z.string().optional(),
+        expiresDate: z.string().optional(),
+        credentialUrl: z.string().optional(),
+      }),
+    )
+    .optional(),
   profileUpdates: z
     .object({
       name: z.string().optional(),
@@ -154,6 +165,20 @@ export const deltaJsonSchema = {
         required: ["institution"],
       },
     },
+    addCertifications: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          name: { type: "string" },
+          issuer: { type: "string" },
+          issuedDate: { type: "string", description: '"YYYY-MM" or "YYYY-MM-DD"' },
+          expiresDate: { type: "string" },
+          credentialUrl: { type: "string" },
+        },
+        required: ["name"],
+      },
+    },
     profileUpdates: {
       type: "object",
       properties: {
@@ -179,5 +204,6 @@ Rules:
 - "I learned X" or "I've been using X" → addSkills (infer a reasonable category and level from context).
 - "I shipped/built/launched a project called X" → addProjects.
 - "I started at X as a Y" → addExperiences with isCurrent: true.
+- "I earned/got/passed the X certification" → addCertifications.
 - "I left X" / "I'm no longer at X" → do NOT delete or modify experience automatically; that requires human review. Omit it from the delta.
 - If nothing in the message maps to a profile change, call the ${DELTA_TOOL_NAME} tool with all fields omitted.`;

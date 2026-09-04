@@ -12,6 +12,22 @@ import { mapFieldsRouter } from "./map-fields";
 
 export const app = new Hono();
 
+// Chrome's Private Network Access policy treats a chrome-extension:// origin
+// as "public" and localhost as "private" — without this header on the
+// preflight response, Chrome silently hangs the extension's background
+// fetch() forever (no error, no rejection, just never resolves). Hono's
+// built-in cors() middleware has no option for this, hence the standalone
+// middleware. Must run before cors() — see its source: for an OPTIONS
+// request it returns its own `new Response(null, { headers: c.res.headers })`
+// without calling next(), so a header set here needs to already be on
+// c.res.headers (the same mutable Headers instance) by the time cors() runs.
+app.use("*", async (c, next) => {
+  if (c.req.header("Access-Control-Request-Private-Network") === "true") {
+    c.header("Access-Control-Allow-Private-Network", "true");
+  }
+  await next();
+});
+
 // Only the extension (and the same-origin dashboard, which needs no CORS
 // header at all) may call this API — no open CORS for anyone else.
 app.use(

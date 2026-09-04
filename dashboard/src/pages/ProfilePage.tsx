@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { FileText, LayoutGrid, Mail, MapPin, Globe, Link, X } from "lucide-react";
-import { getProfile, getResumeMarkdown, deleteSkill, deleteExperience, deleteProject, deleteEducation } from "@/lib/api";
+import { getProfile, getResumeMarkdown, deleteSkill, deleteExperience, deleteProject, deleteEducation, deleteCertification } from "@/lib/api";
 import type { FullProfile } from "@/lib/types";
 import { MarkdownView } from "@/components/MarkdownView";
 import { Card, CardContent } from "@/components/ui/card";
@@ -126,7 +126,7 @@ function CardsView({ full, onChange }: { full: FullProfile; onChange: (full: Ful
                         type="button"
                         aria-label={`Remove ${s.name}`}
                         onClick={() => {
-                          if (window.confirm(`Remove "${s.name}" from your skills?`)) deleteSkill(s.id).then(onChange);
+                          if (window.confirm(`Remove "${s.name}" from your skills? This can't be undone.`)) deleteSkill(s.id).then(onChange);
                         }}
                         className="ml-1 rounded-full p-0.5 opacity-0 transition-opacity hover:bg-destructive/20 hover:text-destructive group-hover:opacity-100"
                       >
@@ -208,12 +208,21 @@ function CardsView({ full, onChange }: { full: FullProfile; onChange: (full: Ful
       {certifications.length > 0 && (
         <section>
           <SectionTitle>Certifications</SectionTitle>
-          <div className="space-y-2">
+          <div className="space-y-3">
             {certifications.map((c) => (
-              <div key={c.id} className="text-sm">
-                <span className="font-medium">{c.name}</span>
-                {c.issuer && <span className="text-muted-foreground"> — {c.issuer}</span>}
-              </div>
+              <Card key={c.id} className="group relative">
+                <CardContent>
+                  <DeleteButton label={c.name} onConfirm={() => deleteCertification(c.id).then(onChange)} />
+                  <div className="pr-6 font-semibold">{c.name}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {c.issuer}
+                    {c.issuer && (c.issuedDate || c.expiresDate) && " · "}
+                    {c.issuedDate && `Issued ${c.issuedDate}`}
+                    {c.issuedDate && c.expiresDate && " · "}
+                    {c.expiresDate && `Expires ${c.expiresDate}`}
+                  </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
         </section>

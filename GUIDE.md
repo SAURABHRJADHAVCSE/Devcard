@@ -33,10 +33,10 @@ colleague.
 
 ```
 I keep a personal knowledge base called Devcard, reachable through its MCP tools
-(add_skill, add_experience, add_project, add_education, update_profile, remove_skill,
-remove_experience, remove_project, remove_education, search_profile, get_full_profile,
-get_resume_text). Treat it as the standing source of truth for my skills, work history,
-and projects.
+(add_skill, add_experience, add_project, add_education, add_certification, update_profile,
+remove_skill, remove_experience, remove_project, remove_education, remove_certification,
+search_profile, get_full_profile, get_resume_text). Treat it as the standing source of
+truth for my skills, work history, and projects.
 
 Whenever I mention something that belongs there — I learned a technology, shipped or
 started a project, changed roles, finished a course, earned a certification — call the
@@ -83,6 +83,7 @@ without it — these work as one-off requests too):
 
 **Education / certifications**
 > "Add my B.Tech in Computer Science from XYZ University, 2018 to 2022"
+> "I passed the AWS Certified Cloud Practitioner exam in March 2025, expires March 2028"
 
 **Updating your profile**
 > "Update my headline to 'Full-stack engineer building AI products'"
@@ -107,8 +108,9 @@ without it — these work as one-off requests too):
 
 Once connected (see `mcp-server/README.md`), just talk normally — see the cheat sheet above
 for examples. Claude reads your message and calls the right tool directly — `add_skill`,
-`add_project`, `add_experience`, `add_education`, `update_profile`, `search_profile`,
-`get_resume_text`, `get_full_profile`. It does **not** need a second AI call to do this (see
+`add_project`, `add_experience`, `add_education`, `add_certification`, `update_profile`,
+`search_profile`, `get_resume_text`, `get_full_profile`. It does **not** need a second AI
+call to do this (see
 "How the two update paths differ" below) — it's just Claude using tools like any other MCP
 server.
 
@@ -125,11 +127,11 @@ Open it in a browser tab, or click the **install icon** in Chrome's address bar 
 standalone app window (own taskbar icon, no browser chrome).
 
 - **Knowledge base tab** — everything in your profile, in two views:
-  - **Cards**: skills grouped by category, experience, projects, education, certifications.
-    Hover any skill or entry card for a small **×** — click it (then confirm) to permanently
-    remove that skill/experience/project/education entry from your stored profile. This is a
-    real delete against the database, not local-only — there's no undo beyond re-adding it.
-    (Certifications don't have this yet — see below.)
+  - **Cards**: skills grouped by category, experience, projects, education, certifications
+    (name, issuer, issued/expiry date). Hover any skill or entry card for a small **×** —
+    click it (then confirm) to permanently remove that entry from your stored profile. This
+    is a real delete against the database, not local-only, and there's no undo beyond
+    re-adding it — the confirm dialog means it, treat it as permanent.
   - **Markdown**: a clean resume-formatted export. Toggle **Edit** to tweak wording, **Copy**
     to grab it for pasting into an actual resume or cover letter. (Edits here are local only —
     they don't change your stored profile; use the delete buttons above, Chat update, or Claude
@@ -169,8 +171,8 @@ standalone app window (own taskbar icon, no browser chrome).
   `mcp-server/src/pdf/registry.ts`; the Resumes tab picks it up automatically.
 - **Chat update tab** — the same natural-language update flow as the extension, full-size,
   with visible history of what each message changed.
-- **Sync status tab** — which platforms (LinkedIn, Naukri, Indeed, Wellfound) have your
-  current profile vs. are stale or never synced.
+- **Sync status tab** — which platforms (Naukri, Indeed, Wellfound) have your current profile
+  vs. are stale or never synced.
 - **Light/dark toggle** — bottom-left of the sidebar.
 
 ---
@@ -180,22 +182,29 @@ standalone app window (own taskbar icon, no browser chrome).
 Click the toolbar icon for the same Profile / Chat / Sync tabs as the dashboard, in a popup.
 The real power is what it injects into other pages:
 
-- **On a known platform's edit page** (LinkedIn, Naukri, Indeed, Wellfound): a **"🧠 Sync with
-  Devcard"** button appears, bottom-right. Click it to fill that page's form fields from your
-  profile.
+- **On a known platform's edit page** (Naukri, Indeed, Wellfound): a **"🧠 Sync with Devcard"**
+  button appears, bottom-right. Click it to fill that page's form fields from your profile.
   ⚠️ **Current state**: the field selectors for these are mostly unverified placeholders (see
   `extension/README.md`) — they need to be checked against each site's real logged-in DOM
   before they'll reliably work. This is the biggest gap right now.
-- **On any other site with a form** (a job application, a signup page, anything): a **"🧠 Fill
-  with Devcard"** button appears if there's anything fillable. Click it and an AI call maps
-  your profile onto whatever fields it finds — no site-specific code needed, works anywhere.
-  Password/OTP/file/checkbox fields are never touched.
+- **On any other site with a form** (LinkedIn included — it isn't a dedicated adapter, see
+  below — plus job applications, signup pages, anything): a **"🧠 Fill with Devcard"** button
+  appears if there's anything fillable. Click it and an AI call maps your profile onto
+  whatever fields it finds — no site-specific code needed, works anywhere. Password/OTP/
+  file/checkbox fields are never touched.
+
+**Why LinkedIn isn't a dedicated adapter**: it was dropped by request. It has no separate
+profile-edit URL (editing happens through per-section modal dialogs, not one form) and
+actively detects/bans extension-based automation, so it wasn't a good fit for the one-click,
+no-AI-call adapter model the other three use. It still works via the generic "🧠 Fill with
+Devcard" mapper above like any unknown site — that's an active, AI-assisted, one-click fill
+rather than passive automation, which is a somewhat lower-risk shape, but still: treat
+LinkedIn autofill carefully and don't rely on it for frequent/bulk use.
 
 **A safety note on autofill**, worth repeating: this reads your own profile and types it into
 fields on the page you're already logged into — no scraping, no third-party data sharing
-except the AI provider call for the generic mapper. Platform policy risk is uneven though —
-Naukri/Indeed/Wellfound are low-risk for occasional personal use; LinkedIn actively detects
-and has banned accounts for extension-based automation, so treat that one carefully.
+except the AI provider call for the generic mapper. Naukri/Indeed/Wellfound are low-risk for
+occasional personal use via their dedicated buttons.
 
 ---
 
@@ -219,9 +228,8 @@ own to lean on.
 
 ## What's not built yet
 
-- **Portfolio site export** — not started.
-- **LinkedIn adapter** — intentionally left as a stub (see the safety note above); it needs
-  the most careful, rate-limited implementation of the four platforms.
+- **LinkedIn adapter** — dropped by request, not planned. Uses the generic AI field mapper
+  instead (see above).
 - **Naukri/Indeed/Wellfound selectors** — present but unverified; you'll need to inspect your
   own logged-in DevTools and fix the `SELECTORS` const in each `extension/entrypoints/content/
   platforms/*.ts` file.
@@ -247,6 +255,7 @@ own to lean on.
 | `add_experience` / `update_experience` / `remove_experience` | Work history |
 | `add_project` / `update_project` / `remove_project` | Projects |
 | `add_education` / `remove_education` | Education entries |
+| `add_certification` / `remove_certification` | Certifications (name, issuer, issued/expiry date) |
 | `update_profile` | Name, headline, bio, contact info |
 | `get_full_profile` | Everything, as structured JSON |
 | `get_resume_text` | Everything, as clean Markdown |

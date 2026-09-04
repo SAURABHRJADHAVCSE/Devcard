@@ -28,6 +28,7 @@ export const deleteSkill = (id: string) => request<FullProfile>(`/api/profile/sk
 export const deleteExperience = (id: string) => request<FullProfile>(`/api/profile/experiences/${id}`, { method: "DELETE" });
 export const deleteProject = (id: string) => request<FullProfile>(`/api/profile/projects/${id}`, { method: "DELETE" });
 export const deleteEducation = (id: string) => request<FullProfile>(`/api/profile/education/${id}`, { method: "DELETE" });
+export const deleteCertification = (id: string) => request<FullProfile>(`/api/profile/certifications/${id}`, { method: "DELETE" });
 
 export interface PdfTemplateInfo {
   id: string;

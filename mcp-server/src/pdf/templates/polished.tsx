@@ -153,6 +153,7 @@ export function PolishedResume({ full, density = "comfortable" }: { full: FullPr
               <Text key={c.id} style={styles.skillLine}>
                 {c.name}
                 {c.issuer ? ` — ${c.issuer}` : ""}
+                {c.issuedDate ? ` (${c.issuedDate}${c.expiresDate ? ` – ${c.expiresDate}` : ""})` : ""}
               </Text>
             ))}
           </View>

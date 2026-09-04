@@ -1,6 +1,6 @@
 import { eq, sql } from "drizzle-orm";
 import { db } from "./client";
-import { skills, projects, experiences, education, profile } from "./schema";
+import { skills, projects, experiences, education, certifications, profile } from "./schema";
 import type { Delta } from "../ai/delta-schema";
 
 // Applies an already-validated delta to the DB and returns a human-readable
@@ -57,6 +57,11 @@ export async function applyDelta(delta: Delta): Promise<string[]> {
   for (const edu of delta.addEducation ?? []) {
     await db.insert(education).values(edu);
     summary.push(`Added education: ${edu.institution}`);
+  }
+
+  for (const cert of delta.addCertifications ?? []) {
+    await db.insert(certifications).values(cert);
+    summary.push(`Added certification: ${cert.name}`);
   }
 
   if (delta.profileUpdates && Object.keys(delta.profileUpdates).length > 0) {

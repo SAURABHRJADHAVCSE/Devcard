@@ -3,7 +3,6 @@ import { getSyncStatus } from "@/lib/api";
 import type { SyncStatusEntry } from "@/lib/types";
 
 const PROFILE_URLS: Record<string, string> = {
-  linkedin: "https://www.linkedin.com/in/me/edit/",
   naukri: "https://www.naukri.com/mnjuser/profile",
   indeed: "https://myjobs.indeed.com/resume",
   wellfound: "https://wellfound.com/profile/edit",

@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { eq } from "drizzle-orm";
 import { db } from "../db/client";
-import { profile, skills, experiences, projects, education } from "../db/schema";
+import { profile, skills, experiences, projects, education, certifications } from "../db/schema";
 import { getFullProfile } from "../db/get-full-profile";
 import { logKnowledgeEvent } from "../db/log-event";
 
@@ -57,5 +57,12 @@ profileRouter.delete("/education/:id", async (c) => {
   const id = c.req.param("id");
   await logKnowledgeEvent("direct", { op: "remove_education", id });
   await db.delete(education).where(eq(education.id, id));
+  return c.json(await getFullProfile());
+});
+
+profileRouter.delete("/certifications/:id", async (c) => {
+  const id = c.req.param("id");
+  await logKnowledgeEvent("direct", { op: "remove_certification", id });
+  await db.delete(certifications).where(eq(certifications.id, id));
   return c.json(await getFullProfile());
 });
