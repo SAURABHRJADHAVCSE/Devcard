@@ -1,4 +1,4 @@
-import type { FullProfile, SyncStatusEntry } from "./types";
+import type { FullProfile, SyncStatusEntry, ResumeVersion, TailorResult } from "./types";
 
 // Served same-origin by the MCP server (see mcp-server/src/api/router.ts),
 // so this is plain fetch — no messaging layer or CORS needed, unlike the
@@ -38,3 +38,33 @@ export interface PdfTemplateInfo {
 }
 
 export const getPdfTemplates = () => request<PdfTemplateInfo[]>("/api/pdf/templates");
+
+// Analysis only — doesn't save anything. The dashboard shows the result for
+// review (especially missingSkills, which need explicit opt-in) before a
+// separate saveResumeVersion call persists it.
+export const tailorResume = (jobDescription: string, requiredSkills?: string) =>
+  request<TailorResult>("/api/resume-versions/tailor", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ jobDescription, requiredSkills }),
+  });
+
+export const listResumeVersions = () => request<ResumeVersion[]>("/api/resume-versions");
+
+export interface SaveResumeVersionInput {
+  name: string;
+  jobDescription?: string;
+  template?: string;
+  summary?: string;
+  skillNames?: string[];
+  projectNames?: string[];
+}
+
+export const saveResumeVersion = (input: SaveResumeVersionInput) =>
+  request<ResumeVersion>("/api/resume-versions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+
+export const deleteResumeVersion = (id: string) => request<ResumeVersion>(`/api/resume-versions/${id}`, { method: "DELETE" });

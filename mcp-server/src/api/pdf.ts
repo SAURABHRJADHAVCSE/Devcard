@@ -1,7 +1,9 @@
 import { Hono } from "hono";
 import { getFullProfile } from "../db/get-full-profile";
+import { getResumeVersion } from "../db/resume-versions";
 import { PDF_TEMPLATES } from "../pdf/registry";
 import { renderResumePdf } from "../pdf/render";
+import { applyResumeVersion } from "../pdf/tailor";
 
 export const pdfRouter = new Hono();
 
@@ -13,7 +15,18 @@ pdfRouter.get("/templates", (c) => {
 
 pdfRouter.get("/", async (c) => {
   const full = await getFullProfile();
-  const { buffer, pageCount, fitOnePage } = await renderResumePdf(c.req.query("template"), full);
+
+  const versionId = c.req.query("version");
+  let toRender = full;
+  let template = c.req.query("template");
+  if (versionId) {
+    const version = await getResumeVersion(versionId);
+    if (!version) return c.json({ error: `No resume version with id ${versionId}` }, 404);
+    toRender = applyResumeVersion(full, version);
+    template = template ?? version.template ?? undefined;
+  }
+
+  const { buffer, pageCount, fitOnePage } = await renderResumePdf(template, toRender);
 
   const filename = `${(full.profile?.name || "resume").replace(/[^a-z0-9]+/gi, "-").toLowerCase()}.pdf`;
   // Default is a real download (attachment) — the dashboard's resume

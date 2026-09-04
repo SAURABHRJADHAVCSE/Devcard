@@ -93,3 +93,22 @@ export interface SyncStatusEntry {
   lastSynced: string;
   isStale: boolean;
 }
+
+export interface ResumeVersion {
+  id: string;
+  name: string;
+  jobDescription: string | null;
+  template: string | null;
+  summary: string | null;
+  skillNames: string | null; // JSON string[]
+  projectNames: string | null; // JSON string[]
+  createdAt: string | null;
+  updatedAt: string | null;
+}
+
+export interface TailorResult {
+  summary: string;
+  matchedSkills: string[];
+  missingSkills: string[];
+  suggestedProjects: string[];
+}

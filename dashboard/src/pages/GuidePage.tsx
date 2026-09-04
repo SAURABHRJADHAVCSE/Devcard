@@ -11,8 +11,10 @@ import { Button } from "@/components/ui/button";
 const STANDING_INSTRUCTION = `I keep a personal knowledge base called Devcard, reachable through its MCP tools
 (add_skill, add_experience, add_project, add_education, add_certification, update_profile,
 remove_skill, remove_experience, remove_project, remove_education, remove_certification,
-search_profile, get_full_profile, get_resume_text, get_resume_pdf, list_resume_templates).
-Treat it as the standing source of truth for my skills, work history, and projects.
+search_profile, get_full_profile, get_resume_text, get_resume_pdf, list_resume_templates,
+tailor_resume, save_resume_version, list_resume_versions, get_resume_version,
+remove_resume_version). Treat it as the standing source of truth for my skills, work
+history, and projects.
 
 Whenever I mention something that belongs there — I learned a technology, shipped or
 started a project, changed roles, finished a course, earned a certification — call the
@@ -39,7 +41,10 @@ Rules:
 - If I ask for my resume as a PDF, call get_resume_pdf directly. There's no separate PDF
   file to edit — it renders fresh from the profile every time, so if I want it to look
   different, edit the profile first (add_skill, update_experience, etc.) then call
-  get_resume_pdf again.`;
+  get_resume_pdf again.
+- If I give you a job description, use tailor_resume, then show me its missingSkills before
+  including any of them — never add a skill I haven't confirmed I actually have, and never
+  add it to the real knowledge base even after I confirm, only to that resume version.`;
 
 interface Prompt {
   text: string;

@@ -7,6 +7,7 @@ import { profileRouter } from "./profile";
 import { chatRouter } from "./chat";
 import { resumeRouter } from "./resume";
 import { pdfRouter } from "./pdf";
+import { resumeVersionsRouter } from "./resume-versions";
 import { syncStatusRouter } from "./sync-status";
 import { mapFieldsRouter } from "./map-fields";
 
@@ -43,6 +44,7 @@ app.route("/api/profile", profileRouter);
 app.route("/api/chat", chatRouter);
 app.route("/api/resume", resumeRouter);
 app.route("/api/pdf", pdfRouter);
+app.route("/api/resume-versions", resumeVersionsRouter);
 app.route("/api/sync-status", syncStatusRouter);
 app.route("/api/map-fields", mapFieldsRouter);
 

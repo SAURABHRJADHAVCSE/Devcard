@@ -73,6 +73,27 @@ export const certifications = sqliteTable("certifications", {
   credentialUrl: text("credential_url"),
 });
 
+// A saved, named resume tailored to one job description — never a copy of
+// the base data, just an overlay on top of it (rendered by merging these
+// fields onto getFullProfile()'s result, see pdf/tailor.ts). skillNames can
+// include names that don't exist in the `skills` table at all — a JD-required
+// skill the user approved adding to THIS resume only, never written back to
+// the real knowledge base. Editing the base profile later still flows
+// through automatically for anything a version didn't override (unset
+// summary/skillNames/projectNames means "use whatever the base profile
+// currently says").
+export const resumeVersions = sqliteTable("resume_versions", {
+  id: text("id").primaryKey().$defaultFn(() => createId()),
+  name: text("name").notNull(), // "Google — Senior SWE, Jan 2026"
+  jobDescription: text("job_description"), // pasted JD text, kept for re-tailoring later
+  template: text("template").default("polished"),
+  summary: text("summary"), // tailored professional-summary override; null = use profile.bio
+  skillNames: text("skill_names"), // JSON string[] — full skill list to show, in relevance order; null = use base skills as-is
+  projectNames: text("project_names"), // JSON string[] — which projects to feature, in order; null = use all base projects
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).$onUpdateFn(() => new Date()),
+});
+
 // Tracks when each platform (linkedin, naukri, ...) was last synced. Not in
 // the original spec's table list, but /api/sync-status needs somewhere to
 // persist this — computed staleness (vs. profile.updatedAt) lives in the API layer.

@@ -4,6 +4,7 @@ import { ProfilePage } from "@/pages/ProfilePage";
 import { ChatPage } from "@/pages/ChatPage";
 import { SyncPage } from "@/pages/SyncPage";
 import { ResumesPage } from "@/pages/ResumesPage";
+import { TailorPage } from "@/pages/TailorPage";
 import { GuidePage } from "@/pages/GuidePage";
 
 const PAGES: Record<Page, { title: string; subtitle: string; component: React.ComponentType }> = {
@@ -26,6 +27,11 @@ const PAGES: Record<Page, { title: string; subtitle: string; component: React.Co
     title: "Resumes",
     subtitle: "Preview every resume template and download the one you want.",
     component: ResumesPage,
+  },
+  tailor: {
+    title: "Tailor",
+    subtitle: "Paste a job description, get an honest tailored resume version — saved and reusable.",
+    component: TailorPage,
   },
   guide: {
     title: "Guide",

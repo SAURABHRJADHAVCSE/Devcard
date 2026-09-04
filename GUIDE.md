@@ -39,8 +39,10 @@ colleague.
 I keep a personal knowledge base called Devcard, reachable through its MCP tools
 (add_skill, add_experience, add_project, add_education, add_certification, update_profile,
 remove_skill, remove_experience, remove_project, remove_education, remove_certification,
-search_profile, get_full_profile, get_resume_text, get_resume_pdf, list_resume_templates).
-Treat it as the standing source of truth for my skills, work history, and projects.
+search_profile, get_full_profile, get_resume_text, get_resume_pdf, list_resume_templates,
+tailor_resume, save_resume_version, list_resume_versions, get_resume_version,
+remove_resume_version). Treat it as the standing source of truth for my skills, work
+history, and projects.
 
 Whenever I mention something that belongs there — I learned a technology, shipped or
 started a project, changed roles, finished a course, earned a certification — call the
@@ -68,6 +70,9 @@ Rules:
   file to edit — it renders fresh from the profile every time, so if I want it to look
   different, edit the profile first (add_skill, update_experience, etc.) then call
   get_resume_pdf again.
+- If I give you a job description, use tailor_resume, then show me its missingSkills before
+  including any of them — never add a skill I haven't confirmed I actually have, and never
+  add it to the real knowledge base even after I confirm, only to that resume version.
 ```
 
 ---
@@ -107,6 +112,21 @@ without it — these work as one-off requests too):
 > "Give me my resume as a PDF"
 > "Format my Devcard profile as a two-paragraph bio for a LinkedIn summary"
 
+**Tailoring a resume to a job** *(works the same from Claude Code, Claude Desktop, or any other MCP-connected tool)*
+> "Here's a job description:
+>
+> [paste the JD]
+>
+> Tailor my Devcard resume to this exact role. Use tailor_resume to analyze it against my real
+> profile, then show me the tailored summary and matched skills. If it flags any required
+> skills I don't have listed, ask me before including any of them on the resume — never assume
+> I have something I haven't told you about. Once I confirm, save it with save_resume_version
+> using a clear name like '<Company> — <Role>', then hand me the PDF with get_resume_pdf.
+> Optimize for a high ATS match score against this JD, keep every claim 100% truthful and
+> grounded in my actual profile, and make the summary and skill ordering as compelling and
+> relevant to this role as the real facts allow — the strongest honest version of my resume
+> for this job, not a generic one."
+
 **Cleanup**
 > "Remove jQuery from my skills, I don't use it anymore"
 > "I left Acme Corp last month — what should we update?" *(asks first, per the standing rule)*
@@ -118,8 +138,8 @@ without it — these work as one-off requests too):
 Once connected (see `mcp-server/README.md`), just talk normally — see the cheat sheet above
 for examples. Claude reads your message and calls the right tool directly — `add_skill`,
 `add_project`, `add_experience`, `add_education`, `add_certification`, `update_profile`,
-`search_profile`, `get_resume_text`, `get_full_profile`, `get_resume_pdf`. It does **not**
-need a second AI call to do this (see
+`search_profile`, `get_resume_text`, `get_full_profile`, `get_resume_pdf`, `tailor_resume`,
+`save_resume_version`. It does **not** need a second AI call to do this (see
 "How the two update paths differ" below) — it's just Claude using tools like any other MCP
 server.
 
@@ -178,6 +198,18 @@ standalone app window (own taskbar icon, no browser chrome).
 
   Adding/re-enabling a template just needs an import plus one entry in
   `mcp-server/src/pdf/registry.ts`; the Resumes tab picks it up automatically.
+- **Tailor tab** — paste a job description (and optionally a separate required-skills list),
+  click Analyze, and an AI call proposes a tailored professional summary, which of your real
+  skills to feature (most relevant first), and which real projects to lead with — built only
+  from what's actually in your profile. If the JD wants a skill you don't have listed, it
+  shows up as an off-by-default toggle: click it to include that skill **on this resume
+  only** — it's never written back to your real knowledge base, so your Devcard profile can't
+  quietly drift out of sync with reality. Save it with a name and it becomes a permanent,
+  redownloadable version — download its PDF anytime via the same button, or delete it when
+  you're done with that application. Everything here also works from Claude (see the cheat
+  sheet's "Tailoring a resume to a job" prompt) or any other MCP-connected tool, via
+  `tailor_resume` / `save_resume_version` / `list_resume_versions` / `get_resume_version` /
+  `remove_resume_version`, and `get_resume_pdf` accepts a `versionId` to render a saved one.
 - **Chat update tab** — the same natural-language update flow as the extension, full-size,
   with visible history of what each message changed.
 - **Sync status tab** — which platforms (Naukri, Indeed, Wellfound) have your current profile
@@ -264,6 +296,9 @@ own to lean on.
 | `GET /api/pdf/templates` | Lists available templates (id, name, description, whether it's ATS-friendly) |
 | `GET /api/pdf?template=ats` | Downloads the resume PDF using that template (`ats` is the default if omitted) |
 | `GET /api/pdf?template=ats&disposition=inline` | Same PDF, served for in-page viewing (used by the Resumes tab's preview) instead of triggering a download |
+| `GET /api/pdf?version=<id>` | Renders a saved, tailored resume version instead of the live profile as-is |
+| `POST /api/resume-versions/tailor` | `{jobDescription, requiredSkills?}` → AI analysis (summary/matchedSkills/missingSkills/suggestedProjects) — doesn't save anything |
+| `GET` / `POST` / `DELETE /api/resume-versions[/:id]` | List, save, and delete saved resume versions |
 
 ---
 
@@ -280,5 +315,7 @@ own to lean on.
 | `update_profile` | Name, headline, bio, contact info |
 | `get_full_profile` | Everything, as structured JSON |
 | `get_resume_text` | Everything, as clean Markdown |
-| `get_resume_pdf` / `list_resume_templates` | The actual PDF file (base64), and which templates exist |
+| `get_resume_pdf` / `list_resume_templates` | The actual PDF file (base64), and which templates exist. `get_resume_pdf` takes an optional `versionId` |
+| `tailor_resume` | Analyzes a JD against the real profile; proposes summary/matchedSkills/missingSkills/suggestedProjects — saves nothing |
+| `save_resume_version` / `list_resume_versions` / `get_resume_version` / `remove_resume_version` | Save, list, inspect, and delete named tailored resume versions |
 | `search_profile` | Keyword search across skills/experience/projects |
