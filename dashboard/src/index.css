@@ -1,0 +1,139 @@
+@import "tailwindcss";
+
+/* Tailwind v4's replacement for `darkMode: 'class'` — toggling .dark on
+   <html> (see App.tsx's theme toggle) flips every var below via ThemeProvider. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* shadcn's base-nova Tabs component uses bare `data-horizontal:`/`data-vertical:`
+   variants, but Base UI's Tabs.Root sets a *value* attribute
+   (data-orientation="horizontal"), not a boolean one — so these need an
+   explicit mapping (normally written by `shadcn init`, which errors out on
+   this machine, see dashboard's git history / session notes). group-data-*
+   variants are auto-derived by Tailwind from these once declared. */
+@custom-variant data-horizontal (&[data-orientation="horizontal"]);
+@custom-variant data-vertical (&[data-orientation="vertical"]);
+
+:root {
+  --radius: 0.65rem;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --primary: #4f46e5;
+  --primary-foreground: #ffffff;
+  --secondary: #eef2ff;
+  --secondary-foreground: #4338ca;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #eef2ff;
+  --accent-foreground: #4338ca;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #818cf8;
+}
+
+.dark {
+  --background: #0b0f1a;
+  --foreground: #e2e8f0;
+  --card: #111827;
+  --card-foreground: #e2e8f0;
+  --popover: #111827;
+  --popover-foreground: #e2e8f0;
+  --primary: #818cf8;
+  --primary-foreground: #1e1b4b;
+  --secondary: #1e1b4b;
+  --secondary-foreground: #c7d2fe;
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
+  --accent: #1e1b4b;
+  --accent-foreground: #c7d2fe;
+  --destructive: #f87171;
+  --destructive-foreground: #1c0a0a;
+  --border: #1e293b;
+  --input: #1e293b;
+  --ring: #6366f1;
+}
+
+@theme inline {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-feature-settings: "cv11", "ss01";
+  -webkit-font-smoothing: antialiased;
+}
+
+.prose-devcard h1 {
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.25em;
+}
+.prose-devcard h2 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-top: 1.75em;
+  margin-bottom: 0.6em;
+  padding-bottom: 0.35em;
+  border-bottom: 1px solid var(--color-border);
+}
+.prose-devcard p {
+  margin-bottom: 0.75em;
+  line-height: 1.65;
+}
+.prose-devcard em {
+  color: var(--color-muted-foreground);
+  font-style: normal;
+}
+.prose-devcard strong {
+  font-weight: 600;
+}
+.prose-devcard ul {
+  list-style: disc;
+  padding-left: 1.25em;
+  margin-bottom: 0.75em;
+}
+.prose-devcard li {
+  margin-bottom: 0.3em;
+  line-height: 1.6;
+}
+.prose-devcard hr {
+  display: none;
+}

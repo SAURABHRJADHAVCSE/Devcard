@@ -1,0 +1,8 @@
+{
+  "name": "devcard",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun run dev.ts"
+  }
+}
