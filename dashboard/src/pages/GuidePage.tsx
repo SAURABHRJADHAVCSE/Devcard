@@ -104,6 +104,19 @@ const CHEAT_SHEET: { title: string; prompts: Prompt[] }[] = [
     ],
   },
   {
+    title: "Tailoring a resume to a job",
+    prompts: [
+      {
+        text: `Here's a job description:
+
+[paste the JD]
+
+Tailor my Devcard resume to this exact role. Use tailor_resume to analyze it against my real profile, then show me the tailored summary and matched skills. If it flags any required skills I don't have listed, ask me before including any of them on the resume — never assume I have something I haven't told you about. Once I confirm, save it with save_resume_version using a clear name like '<Company> — <Role>', then hand me the PDF with get_resume_pdf. Optimize for a high ATS match score against this JD, keep every claim 100% truthful and grounded in my actual profile, and make the summary and skill ordering as compelling and relevant to this role as the real facts allow — the strongest honest version of my resume for this job, not a generic one.`,
+        note: "Works the same from Claude Code, Claude Desktop, or any other MCP-connected tool",
+      },
+    ],
+  },
+  {
     title: "Cleanup",
     prompts: [
       { text: "Remove jQuery from my skills, I don't use it anymore" },
@@ -140,7 +153,7 @@ function PromptRow({ prompt }: { prompt: Prompt }) {
   return (
     <div className="flex items-start justify-between gap-3 rounded-lg border border-border bg-muted/30 px-3.5 py-2.5">
       <div className="min-w-0">
-        <p className="text-sm leading-relaxed">"{prompt.text}"</p>
+        <p className="text-sm leading-relaxed whitespace-pre-wrap">"{prompt.text}"</p>
         {prompt.note && <p className="mt-1 text-xs text-muted-foreground">{prompt.note}</p>}
       </div>
       <Button
