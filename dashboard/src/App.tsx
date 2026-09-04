@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Sidebar, type Page } from "@/components/Sidebar";
 import { ProfilePage } from "@/pages/ProfilePage";
 import { ChatPage } from "@/pages/ChatPage";
-import { SyncPage } from "@/pages/SyncPage";
 import { ResumesPage } from "@/pages/ResumesPage";
 import { TailorPage } from "@/pages/TailorPage";
 import { GuidePage } from "@/pages/GuidePage";
@@ -17,11 +16,6 @@ const PAGES: Record<Page, { title: string; subtitle: string; component: React.Co
     title: "Chat update",
     subtitle: "Tell Devcard what you learned or built — it figures out the rest.",
     component: ChatPage,
-  },
-  sync: {
-    title: "Sync status",
-    subtitle: "Which platforms have your latest profile, and which don't.",
-    component: SyncPage,
   },
   resumes: {
     title: "Resumes",

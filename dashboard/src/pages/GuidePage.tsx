@@ -64,7 +64,7 @@ const CHEAT_SHEET: { title: string; prompts: Prompt[] }[] = [
   {
     title: "Adding a project",
     prompts: [
-      { text: "I shipped a Chrome extension called Devcard, add it as a project" },
+      { text: "I shipped a side project called Claratto, an AI tutoring platform, add it as a project" },
       { text: "Add my side project 'kalshi-bot' — a Python trading bot using the Kalshi API" },
     ],
   },

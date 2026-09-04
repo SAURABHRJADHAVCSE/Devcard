@@ -1,7 +1,8 @@
 # devcard mcp-server
 
 The brain of Devcard: stores the profile knowledge base in SQLite, exposes MCP tools
-over stdio (for Claude Desktop / Cursor), and an HTTP API on `:6366` (for the Chrome extension).
+over stdio (for Claude Desktop / Cursor), and an HTTP API on `:6366` (serves the dashboard and
+the PDF download link from `get_resume_pdf`).
 
 ## Setup
 

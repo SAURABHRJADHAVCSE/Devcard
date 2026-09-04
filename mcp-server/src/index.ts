@@ -8,11 +8,11 @@ async function main() {
   const transport = new StdioServerTransport();
   await mcpServer.connect(transport);
 
-  // The same process also serves the Chrome extension's HTTP API — the
-  // extension can't spawn an MCP stdio client, so it needs a normal port.
-  // Only one process needs to actually hold this port: an MCP client (e.g.
-  // Claude Desktop) may spawn its own instance of this same script even
-  // while `bun run dev` already owns :6366 for the extension. That second
+  // The same process also serves the dashboard (static files) and the PDF
+  // download link from get_resume_pdf over a normal HTTP port. Only one
+  // process needs to actually hold this port: an MCP client (e.g. Claude
+  // Desktop) may spawn its own instance of this same script even while
+  // `bun run dev` already owns :6366 for the dashboard. That second
   // instance's stdio connection is still valid — don't crash it just
   // because the HTTP side lost the race for the port.
   const port = Number(process.env.PORT ?? 6366);

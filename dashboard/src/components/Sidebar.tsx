@@ -1,16 +1,15 @@
-import { User, MessageSquare, RefreshCw, FileStack, Sparkles, BookOpen, Sun, Moon } from "lucide-react";
+import { User, MessageSquare, FileStack, Sparkles, BookOpen, Sun, Moon } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "cn";
 import { useTheme } from "@/lib/theme";
 
-export type Page = "profile" | "chat" | "sync" | "resumes" | "tailor" | "guide";
+export type Page = "profile" | "chat" | "resumes" | "tailor" | "guide";
 
 const NAV: { page: Page; label: string; icon: LucideIcon }[] = [
   { page: "profile", label: "Knowledge base", icon: User },
   { page: "chat", label: "Chat update", icon: MessageSquare },
-  { page: "sync", label: "Sync status", icon: RefreshCw },
   { page: "resumes", label: "Resumes", icon: FileStack },
   { page: "tailor", label: "Tailor", icon: Sparkles },
   { page: "guide", label: "Guide", icon: BookOpen },

@@ -7,8 +7,11 @@ One knowledge base. Every platform in sync.
 ## Parts
 
 - **`mcp-server/`** — the brain. SQLite knowledge base, MCP tools (Claude Desktop / Claude Code), HTTP API on `:6366`, and serves the dashboard.
-- **`extension/`** — the hands. Chrome extension that syncs your profile into LinkedIn/Naukri/Indeed/Wellfound and any other site's forms.
 - **`dashboard/`** — the view. A full-page web UI (served by `mcp-server` itself at `http://localhost:6366`) for browsing your knowledge base at full size — install it as an app via Chrome's install icon in the address bar for a standalone window.
+
+There used to be a Chrome extension here (`extension/`) that auto-filled job application forms.
+Removed 2026-09-05 — Claude for Chrome covers the same job (reading this same knowledge base over
+MCP and acting on the live page) without a second codebase to maintain.
 
 ## Run everything
 
@@ -16,10 +19,8 @@ One knowledge base. Every platform in sync.
 bun run dev
 ```
 
-One command from this directory starts all three (mcp-server + extension build + dashboard build). Then:
-
-- Open **http://localhost:6366** for the dashboard.
-- Load `extension/.output/chrome-mv3-dev` as an unpacked extension in `chrome://extensions` (once; it hot-reloads after that).
+One command from this directory starts both (mcp-server + dashboard build). Then open
+**http://localhost:6366** for the dashboard.
 
 ## Connect Claude Desktop / Claude Code
 

@@ -94,14 +94,6 @@ export const resumeVersions = sqliteTable("resume_versions", {
   updatedAt: integer("updated_at", { mode: "timestamp" }).$onUpdateFn(() => new Date()),
 });
 
-// Tracks when each platform (linkedin, naukri, ...) was last synced. Not in
-// the original spec's table list, but /api/sync-status needs somewhere to
-// persist this — computed staleness (vs. profile.updatedAt) lives in the API layer.
-export const syncStatus = sqliteTable("sync_status", {
-  platform: text("platform").primaryKey(),
-  lastSyncedAt: integer("last_synced_at", { mode: "timestamp" }).notNull(),
-});
-
 // Every update to the knowledge base is logged here first, then applied —
 // this is the audit trail that lets us see what an AI parse actually changed.
 export const knowledgeEvents = sqliteTable("knowledge_events", {

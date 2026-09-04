@@ -9,6 +9,12 @@ import {
 import { getProvider } from "./provider";
 import { getFullProfile } from "../db/get-full-profile";
 
+// A resume-appropriate skills section is curated, not exhaustive — capped
+// here as a safety net regardless of whether the model followed the prompt's
+// own "at most 18" instruction. Skills past the cap are still real and still
+// true of the person; they just don't get featured on this one-page resume.
+const MAX_MATCHED_SKILLS = 18;
+
 // Analysis only — never writes to the database. matchedSkills/
 // suggestedProjects/missingSkills are a *proposal*; nothing is saved as a
 // resume version until the caller (dashboard form, or Claude after asking
@@ -53,5 +59,5 @@ export async function tailorResume(jobDescription: string, requiredSkills?: stri
 
   const suggestedProjects = parsed.data.suggestedProjects.filter((name) => realProjectNames.has(name.toLowerCase()));
 
-  return { summary: parsed.data.summary, matchedSkills, missingSkills, suggestedProjects };
+  return { summary: parsed.data.summary, matchedSkills: matchedSkills.slice(0, MAX_MATCHED_SKILLS), missingSkills, suggestedProjects };
 }

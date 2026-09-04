@@ -88,12 +88,6 @@ export interface FullProfile {
   certifications: Certification[];
 }
 
-export interface SyncStatusEntry {
-  platform: string;
-  lastSynced: string;
-  isStale: boolean;
-}
-
 export interface ResumeVersion {
   id: string;
   name: string;

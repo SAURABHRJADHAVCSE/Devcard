@@ -1,8 +1,6 @@
-import type { FullProfile, SyncStatusEntry, ResumeVersion, TailorResult } from "./types";
+import type { FullProfile, ResumeVersion, TailorResult } from "./types";
 
-// Served same-origin by the MCP server (see mcp-server/src/api/router.ts),
-// so this is plain fetch — no messaging layer or CORS needed, unlike the
-// Chrome extension which has to proxy through its background worker.
+// Served same-origin by the MCP server (see mcp-server/src/api/router.ts).
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(path, init);
   if (!res.ok) throw new Error(`${path} returned ${res.status}`);
@@ -19,8 +17,6 @@ export const chatUpdate = (message: string) =>
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ message }),
   });
-
-export const getSyncStatus = () => request<SyncStatusEntry[]>("/api/sync-status");
 
 // Each returns the fresh full profile so the caller can update its view
 // straight from the response instead of issuing a second GET.

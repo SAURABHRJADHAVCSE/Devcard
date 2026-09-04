@@ -1,8 +1,7 @@
 # Devcard — User Guide
 
 One knowledge base about you. Update it once, in plain English, from wherever you happen to
-be — and pull it back out however you need it: through Claude, in a full dashboard, or
-autofilled straight into a job site's form.
+be — and pull it back out however you need it: through Claude, or in a full dashboard.
 
 This doc is "what can I actually do with this." For install/setup steps, see the root
 `README.md` and `mcp-server/README.md`.
@@ -13,17 +12,22 @@ This doc is "what can I actually do with this." For install/setup steps, see the
 
 ---
 
-## The three ways in
+## The two ways in
 
 | Surface | What it's for | Where |
 |---|---|---|
 | **Claude Desktop / Claude Code** | Talk to your knowledge base in natural language, no UI needed | Any Claude conversation, once connected |
 | **Dashboard** | Browse everything at full size, export as Markdown | `http://localhost:6366` |
-| **Chrome extension** | Sync your profile *into* other sites' forms | Toolbar icon + buttons injected on job sites |
 
-All three read and write the **same** SQLite database through the same MCP server — update
+Both read and write the **same** SQLite database through the same MCP server — update
 your skills from Claude on your phone via Cowork, and the dashboard on your laptop shows it
 immediately.
+
+Need your profile typed into an actual job application form on some other site? That's Claude
+for Chrome's job now, not Devcard's — it already has this same knowledge base over MCP, and it
+can see and act on the live page directly. A dedicated Devcard extension used to do this with
+its own bespoke DOM-mapping code; removed 2026-09-05 since it was solving a problem Claude for
+Chrome now solves without a second codebase to maintain.
 
 ---
 
@@ -89,7 +93,7 @@ without it — these work as one-off requests too):
 > "I've been writing Go for a few years now, add that"
 
 **Adding a project**
-> "I shipped a Chrome extension called Devcard, add it as a project"
+> "I shipped a side project called Claratto, an AI tutoring platform, add it as a project"
 > "Add my side project 'kalshi-bot' — a Python trading bot using the Kalshi API"
 
 **Adding / updating experience**
@@ -145,10 +149,12 @@ for examples. Claude reads your message and calls the right tool directly — `a
 "How the two update paths differ" below) — it's just Claude using tools like any other MCP
 server.
 
-Claude Code with `--chrome` enabled can go further: since it has both your Devcard tools *and*
-real browser control in the same session, you can ask it to read your profile and fill out an
-actual job application form live, handling logins/CAPTCHAs itself. This is the most capable
-(but least automated/hands-off) way to sync a profile anywhere.
+Claude Code with `--chrome` enabled (or Claude for Chrome) can go further: since it has both
+your Devcard tools *and* real browser control in the same session, you can ask it to read your
+profile and fill out an actual job application form live, handling logins/CAPTCHAs itself. This
+is the most capable (but least automated/hands-off) way to sync a profile anywhere — and the
+replacement for what a dedicated Devcard browser extension used to do with its own bespoke
+DOM-mapping code.
 
 ---
 
@@ -245,54 +251,9 @@ standalone app window (own taskbar icon, no browser chrome).
   sheet's "Tailoring a resume to a job" prompt) or any other MCP-connected tool, via
   `tailor_resume` / `save_resume_version` / `list_resume_versions` / `get_resume_version` /
   `remove_resume_version`, and `get_resume_pdf` accepts a `versionId` to render a saved one.
-- **Chat update tab** — the same natural-language update flow as the extension, full-size,
-  with visible history of what each message changed.
-- **Sync status tab** — which platforms (Naukri, Indeed, Wellfound) have your current profile
-  vs. are stale or never synced.
+- **Chat update tab** — a natural-language update flow, full-size, with visible history of
+  what each message changed.
 - **Light/dark toggle** — bottom-left of the sidebar.
-
----
-
-## 3. Chrome extension
-
-Click the toolbar icon for the same Profile / Chat / Sync tabs as the dashboard, in a popup.
-The real power is what it injects into other pages:
-
-- **On any site with a form** — any job application, LinkedIn, Naukri, Indeed, Wellfound,
-  a signup page, anything: a **"🧠 Fill with Devcard"** button appears if there's anything
-  fillable. Click it and an AI call maps your profile onto whatever fields it finds — no
-  site-specific code, no manually-maintained CSS selectors, works anywhere. Password/OTP/
-  file/checkbox fields are never touched.
-
-**Why there's only one mechanism now**: this used to be two systems — hardcoded-selector
-adapters for Naukri/Indeed/Wellfound (fast, free, but needed someone to manually inspect each
-site's logged-in DOM and re-verify whenever the site redesigned) plus the AI mapper for
-everything else. Both dropped by request in favor of the AI mapper for every site uniformly —
-one code path, zero manual DOM work ever, at the cost of a small AI call per fill. Naukri/
-Indeed/Wellfound still get marked in the Sync status tab after a successful fill (by hostname,
-not by a dedicated adapter) — see `KNOWN_JOB_PLATFORMS` in `extension/entrypoints/content/
-index.ts`.
-
-**A safety note on autofill**, worth repeating: this reads your own profile and types it into
-fields on the page you're already logged into — no scraping, no third-party data sharing
-except the AI provider call. LinkedIn actively detects/bans extension-based automation more
-than most sites — the AI-mapper's active, one-click-per-use shape is lower-risk than passive
-background automation would be, but still don't rely on it there for frequent/bulk use.
-
-⚠️ **Known issue, unresolved**: while testing this, the extension's background→server `fetch()`
-calls that need a CORS preflight (any POST/PATCH with a JSON body — which is every meaningful
-action: filling fields, chat updates, profile edits) hung indefinitely in automated Chrome
-testing, while simple requests (plain GET, header-less POST) worked instantly. Root-caused it
-partway: Chrome's Private Network Access policy requires an `Access-Control-Allow-Private-
-Network: true` header on the preflight response for a `chrome-extension://` origin reaching
-`localhost` — added that (`mcp-server/src/api/router.ts`), confirmed via `curl` that the header
-is now present — but the hang persisted even with it in place and even with Chrome's PNA
-enforcement flags explicitly disabled. Most likely explanation: a native Chrome permission
-prompt gating local-network access that needs a human to click "Allow," which an automated
-browser can never do — meaning this may not reproduce for you at all in normal use. **Please
-test the actual "🧠 Fill with Devcard" button yourself** (load unpacked via chrome://extensions,
-not automation) and report back — if it hangs for you too, this needs more investigation; if it
-works, the PNA header fix was sufficient and this note can come out.
 
 ---
 
@@ -303,24 +264,14 @@ There are two ways a message becomes a profile change, and they're not the same:
 - **You → Claude → tool call.** Claude reads your message itself and calls `add_skill` /
   `add_project` / etc. directly. No extra AI call, no API key spent beyond your normal Claude
   usage.
-- **You → extension/dashboard chat box → `update_knowledge_base`.** There's no Claude in that
+- **You → dashboard chat box → `update_knowledge_base`.** There's no Claude in that
   loop — just raw text hitting the server — so the server runs its *own* AI call (configured
   via `AI_PROVIDER` = `anthropic` or `glm` in `mcp-server/.env`) to parse it. This is the only
   place a second API key actually gets used.
 
 If you only ever talk to Devcard through Claude Desktop/Code, you don't need `AI_PROVIDER`
-configured at all. It's there for the extension/dashboard's chat box, which has no LLM of its
+configured at all. It's there for the dashboard's chat box, which has no LLM of its
 own to lean on.
-
----
-
-## What's not built yet
-
-- **Platform-specific adapters (LinkedIn, Naukri, Indeed, Wellfound)** — dropped entirely by
-  request, not planned. Every site uses the generic AI field mapper instead (see above), so
-  there's no more manual selector-verification homework.
-- **The CORS/autofill hang noted above** — needs you to test the real button in a real,
-  non-automated Chrome and report back.
 
 ---
 

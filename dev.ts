@@ -10,7 +10,6 @@ const npm = process.platform === "win32" ? "npm.cmd" : "npm";
 // spawns each with its own cwd and forwards Ctrl+C to both.
 const processes = [
   { name: "mcp-server", cmd: ["bun", "run", "dev"], cwd: new URL("./mcp-server", import.meta.url).pathname },
-  { name: "extension", cmd: [npm, "run", "dev"], cwd: new URL("./extension", import.meta.url).pathname },
   // Rebuilds dashboard/dist on every save; mcp-server serves that folder as
   // static files (src/api/router.ts). No dev-server/HMR wiring needed here —
   // refresh the browser tab after a change lands.
