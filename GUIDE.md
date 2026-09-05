@@ -135,6 +135,44 @@ Rules:
   standing permission to apply never overrides them.
 ```
 
+**ChatGPT version** — paste into ChatGPT's custom instructions (Settings → Personalization →
+Custom instructions) or at the top of a new conversation. ChatGPT can't reach Devcard directly
+(it only accepts a remote HTTP/SSE MCP server, which this project doesn't run yet), so this
+isn't a weaker rewrite of the Claude version above — it's a genuinely different job: never
+claim to have saved anything, always work from what's actually pasted into the conversation
+rather than chat memory or guesswork, and say plainly when something needs Claude instead.
+
+```
+I keep a personal knowledge base called Devcard, but you don't have a live connection to it —
+so treat whatever resume/profile text I paste into this conversation as the current, complete
+truth, not something to remember from earlier chats or infer on your own.
+
+Whenever I mention something that belongs in Devcard — I learned a technology, shipped or
+started a project, changed roles, finished a course, earned a certification — don't try to
+save it anywhere yourself. Remind me to add it to Devcard directly (through Claude, or the
+Devcard dashboard) so it stays the single source of truth, then use it as context for the
+rest of this conversation only.
+
+For resume tailoring, an honest audit, or finding roles I'm a strong match for, ask me to
+paste my current resume text if I haven't already, then follow the same truthfulness rules
+Devcard itself enforces: never invent a skill, achievement, metric, or credential that isn't
+in what I pasted; if a job description wants something I don't have, tell me plainly rather
+than assuming or working around it.
+
+Rules:
+- Never claim to have saved, updated, or synced anything to Devcard — you can't. If I ask you
+  to "add this to my profile," tell me to do it through Claude or the dashboard instead.
+- Only work from what I've actually pasted into this conversation, not what a past ChatGPT
+  conversation may have said about my background — Devcard, not chat memory, is the source of
+  truth, and old context can go stale.
+- If I paste a job description, tailor my resume the same way Devcard's own tailoring would:
+  lead with my most relevant true qualification, keep the summary to 2-3 sentences, flag any
+  required skill I don't have rather than assuming I have it.
+- Live job search, actually applying to postings, and logging applications need Devcard's MCP
+  tools and real browser control — I have to do those through Claude, not you. If I ask for
+  them here, say so plainly rather than attempting a weaker version.
+```
+
 ---
 
 ## Prompt cheat sheet
@@ -166,7 +204,9 @@ replace it with your own details before sending; everything else is literal.
 >    Do not claim that an ATS score guarantees an interview or selection; optimize the factors
 >    we can control and report the remaining risks honestly."
 >
-> **ChatGPT version** *(outcome-first — uses your live Devcard profile and verifies the final PDF)*:
+> **ChatGPT version** *(outcome-first — uses your live Devcard profile and verifies the final
+> PDF; needs the ChatGPT desktop app's built-in browser specifically — the cloud/Agent-mode
+> browser can't reach `localhost:6366` at all)*:
 > "Create the strongest truthful, one-page ATS resume I can submit for the job below.
 >
 > Use ChatGPT's built-in browser to open http://localhost:6366 and treat my Devcard Knowledge
@@ -204,7 +244,9 @@ replace it with your own details before sending; everything else is literal.
 > be emphasized more, and which are weak filler that should be cut? Be specific and critical —
 > I'd rather hear it now than after 50 rejections."
 >
-> **ChatGPT version** *(deep recruiter audit grounded in your content and rendered resume)*:
+> **ChatGPT version** *(deep recruiter audit grounded in your content and rendered resume;
+> needs the ChatGPT desktop app's built-in browser specifically — the cloud/Agent-mode browser
+> can't reach `localhost:6366` at all)*:
 > "Audit my current resume like a skeptical senior technical recruiter deciding whether to
 > interview me.
 >
@@ -241,7 +283,9 @@ replace it with your own details before sending; everything else is literal.
 > Estimated Match % | Why I'm a Strong Fit | Top 3 Missing Keywords to Add | Where to Search.
 > Base every claim on what's actually in my profile — no inflating my fit to hit round numbers."
 >
-> **ChatGPT version** *(combines your live profile with current market evidence)*:
+> **ChatGPT version** *(combines your live profile with current market evidence; needs the
+> ChatGPT desktop app's built-in browser specifically — the cloud/Agent-mode browser can't
+> reach `localhost:6366` at all)*:
 > "Find the 10 job titles that give me the best realistic chance of landing interviews in
 > [target industry/location].
 >
@@ -301,7 +345,12 @@ hands you the tailored PDFs to apply yourself)*
 >    Resume Version | Applied (yes/no) | PDF link. Never imply that a score guarantees an
 >    interview."
 >
-> **ChatGPT version** *(full ChatGPT Work workflow with shortlist and pre-submission checkpoints)*:
+> **ChatGPT version** *(full ChatGPT Work workflow with shortlist and pre-submission
+> checkpoints — needs the ChatGPT desktop app's built-in browser, not the cloud/Agent-mode
+> browser, since only the desktop app's local browser can reach `localhost:6366` at all. It
+> also runs on its own separate browser profile, not your regular Chrome, so it won't already
+> be logged into Naukri/Hirist/Wellfound — sign in there once inside that browser first, same
+> as any new browser profile)*:
 > "Find, qualify, tailor, and apply to the strongest fresh [job title(s)] openings posted
 > within the last [N] days.
 >
@@ -361,9 +410,14 @@ prompt above — no brackets to fill in, run it as-is)*
 > table: Job Title | Company | Platform | Estimated Match | Applied (yes/no) | PDF link. Also
 > tell me how many postings you skipped as already-applied."
 >
-> **ChatGPT version** *(high-signal daily hunt optimized for quality and verification)*:
-> "Run today's focused job hunt across Naukri, Hirist, and Wellfound using my connected Chrome
-> profile and my local Devcard dashboard at http://localhost:6366.
+> **ChatGPT version** *(high-signal daily hunt optimized for quality and verification — needs
+> the ChatGPT desktop app's built-in browser specifically, not the cloud/Agent-mode browser,
+> since only the desktop app's local browser can reach `localhost:6366` at all; it's also a
+> separate browser profile from your regular Chrome, so sign into Naukri/Hirist/Wellfound
+> there once first — it won't already have your existing logins)*:
+> "Run today's focused job hunt across Naukri, Hirist, and Wellfound using the ChatGPT desktop
+> app's built-in browser (already signed into these platforms there) and my local Devcard
+> dashboard at http://localhost:6366.
 >
 > Goal: find up to 10 fresh postings per platform, then advance only the strongest truthful
 > matches instead of forcing a quota.
@@ -400,7 +454,9 @@ prompt above — no brackets to fill in, run it as-is)*
 > "I just applied to [Role] at [Company] on [platform/URL]. Log it with record_application,
 > and link it to the '<Company> — <Role>' resume version if I saved one for it."
 >
-> **ChatGPT version** *(duplicate-safe and verifies the saved row)*:
+> **ChatGPT version** *(duplicate-safe and verifies the saved row — needs the ChatGPT desktop
+> app's built-in browser, not the cloud/Agent-mode browser, since only the desktop app's local
+> browser can reach `localhost:6366` at all)*:
 > "Record this submitted application accurately in Devcard:
 >
 > - Role: [Role]

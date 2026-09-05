@@ -103,6 +103,40 @@ Rules:
   skill, never inflate a match score) — those are accuracy checks, not permission checks, and
   standing permission to apply never overrides them.`;
 
+// ChatGPT has no live connection to Devcard (it only accepts a remote HTTP/SSE MCP server,
+// which this project doesn't run yet — see GUIDE.md), so this isn't a weaker rewrite of the
+// same instructions, it's a genuinely different job: never claim to save anything, always work
+// from what's actually pasted into the conversation rather than chat memory or guesswork, and
+// say plainly when something (live search, applying, logging) needs Claude instead.
+const STANDING_INSTRUCTION_CHATGPT = `I keep a personal knowledge base called Devcard, but you don't have a live connection to it —
+so treat whatever resume/profile text I paste into this conversation as the current, complete
+truth, not something to remember from earlier chats or infer on your own.
+
+Whenever I mention something that belongs in Devcard — I learned a technology, shipped or
+started a project, changed roles, finished a course, earned a certification — don't try to
+save it anywhere yourself. Remind me to add it to Devcard directly (through Claude, or the
+Devcard dashboard) so it stays the single source of truth, then use it as context for the
+rest of this conversation only.
+
+For resume tailoring, an honest audit, or finding roles I'm a strong match for, ask me to
+paste my current resume text if I haven't already, then follow the same truthfulness rules
+Devcard itself enforces: never invent a skill, achievement, metric, or credential that isn't
+in what I pasted; if a job description wants something I don't have, tell me plainly rather
+than assuming or working around it.
+
+Rules:
+- Never claim to have saved, updated, or synced anything to Devcard — you can't. If I ask you
+  to "add this to my profile," tell me to do it through Claude or the dashboard instead.
+- Only work from what I've actually pasted into this conversation, not what a past ChatGPT
+  conversation may have said about my background — Devcard, not chat memory, is the source of
+  truth, and old context can go stale.
+- If I paste a job description, tailor my resume the same way Devcard's own tailoring would:
+  lead with my most relevant true qualification, keep the summary to 2-3 sentences, flag any
+  required skill I don't have rather than assuming I have it.
+- Live job search, actually applying to postings, and logging applications need Devcard's MCP
+  tools and real browser control — I have to do those through Claude, not you. If I ask for
+  them here, say so plainly rather than attempting a weaker version.`;
+
 // STANDING_INSTRUCTION's source is manually wrapped at ~95 chars/line for
 // readability in the code — rendering that raw with `white-space: pre-wrap`
 // would turn every source line break into a hard line break in the UI
@@ -420,22 +454,39 @@ export function GuidePage() {
       <section>
         <div className="mb-3 flex flex-col items-start justify-between gap-4 sm:flex-row">
           <div>
-            <h2 className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">
-              Keep it always in sync
-            </h2>
+            <div className="flex flex-wrap items-center gap-3">
+              <h2 className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">
+                Keep it always in sync
+              </h2>
+              <ClientToggle client={client} onChange={setClient} />
+            </div>
             <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-              Paste this into Claude's custom instructions (claude.ai → Settings → Profile), Claude Desktop's
-              preferences, or a <code className="text-xs">CLAUDE.md</code> — anywhere it persists across
-              conversations. Once it's there, you never have to say "add this to Devcard" — just mention what
-              happened, the way you'd tell a colleague.
+              {client === "claude" ? (
+                <>
+                  Paste this into Claude's custom instructions (claude.ai → Settings → Profile), Claude Desktop's
+                  preferences, or a <code className="text-xs">CLAUDE.md</code> — anywhere it persists across
+                  conversations. Once it's there, you never have to say "add this to Devcard" — just mention what
+                  happened, the way you'd tell a colleague.
+                </>
+              ) : (
+                <>
+                  Paste this into ChatGPT's custom instructions (Settings → Personalization → Custom instructions),
+                  or at the top of a new conversation. ChatGPT can't reach Devcard directly (see the note above), so
+                  this is a different job from the Claude version — it keeps ChatGPT honest about what it can't do,
+                  not wired up to save anything automatically.
+                </>
+              )}
             </p>
           </div>
-          <CopyButton text={STANDING_INSTRUCTION} label="Copy instruction" />
+          <CopyButton
+            text={client === "claude" ? STANDING_INSTRUCTION : STANDING_INSTRUCTION_CHATGPT}
+            label="Copy instruction"
+          />
         </div>
         <Card>
           <CardContent>
             <pre className="font-sans text-[0.83rem] leading-relaxed whitespace-pre-wrap text-foreground/90">
-              {formatForDisplay(STANDING_INSTRUCTION)}
+              {formatForDisplay(client === "claude" ? STANDING_INSTRUCTION : STANDING_INSTRUCTION_CHATGPT)}
             </pre>
           </CardContent>
         </Card>
