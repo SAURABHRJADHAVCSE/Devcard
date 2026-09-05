@@ -25,6 +25,12 @@ export async function applyDelta(delta: Delta): Promise<string[]> {
   }
 
   for (const project of delta.addProjects ?? []) {
+    const [existingProject] = await db
+      .select()
+      .from(projects)
+      .where(sql`lower(${projects.name}) = lower(${project.name})`)
+      .limit(1);
+    if (existingProject) continue;
     await db.insert(projects).values({
       name: project.name,
       description: project.description,
@@ -40,6 +46,15 @@ export async function applyDelta(delta: Delta): Promise<string[]> {
   }
 
   for (const exp of delta.addExperiences ?? []) {
+    const [existingExp] = await db
+      .select()
+      .from(experiences)
+      .where(sql`lower(${experiences.company}) = lower(${exp.company}) and lower(${experiences.role}) = lower(${exp.role})`)
+      .limit(1);
+    if (existingExp) {
+      summary.push(`Skipped: "${exp.role}" at ${exp.company} already exists (id ${existingExp.id}) — describe it as an update instead ("rewrite my description at ...") to change it, not a new entry`);
+      continue;
+    }
     await db.insert(experiences).values({
       company: exp.company,
       role: exp.role,
@@ -52,6 +67,42 @@ export async function applyDelta(delta: Delta): Promise<string[]> {
       isCurrent: exp.isCurrent,
     });
     summary.push(`Added experience: ${exp.role} at ${exp.company}`);
+  }
+
+  for (const patch of delta.updateExperiences ?? []) {
+    const [existing] = await db
+      .select()
+      .from(experiences)
+      .where(sql`lower(${experiences.company}) = lower(${patch.company}) and lower(${experiences.role}) = lower(${patch.role})`)
+      .limit(1);
+    if (!existing) {
+      summary.push(`Could not update "${patch.role}" at ${patch.company} — no experience with that exact company + role exists (check spelling against the current profile)`);
+      continue;
+    }
+    const { company, role, ...fieldsRaw } = patch;
+    const fields: Record<string, unknown> = Object.fromEntries(Object.entries(fieldsRaw).filter(([, v]) => v !== undefined));
+    if (fields.techUsed) fields.techUsed = JSON.stringify(fields.techUsed);
+    if (Object.keys(fields).length === 0) continue;
+    await db.update(experiences).set(fields).where(eq(experiences.id, existing.id));
+    summary.push(`Updated experience: ${role} at ${company} (${Object.keys(fields).join(", ")})`);
+  }
+
+  for (const patch of delta.updateProjects ?? []) {
+    const [existing] = await db
+      .select()
+      .from(projects)
+      .where(sql`lower(${projects.name}) = lower(${patch.name})`)
+      .limit(1);
+    if (!existing) {
+      summary.push(`Could not update "${patch.name}" — no project with that exact name exists (check spelling against the current profile)`);
+      continue;
+    }
+    const { name, tech, ...fieldsRaw } = patch;
+    const fields: Record<string, unknown> = Object.fromEntries(Object.entries(fieldsRaw).filter(([, v]) => v !== undefined));
+    if (tech !== undefined) fields.tech = JSON.stringify(tech);
+    if (Object.keys(fields).length === 0) continue;
+    await db.update(projects).set(fields).where(eq(projects.id, existing.id));
+    summary.push(`Updated project: ${name} (${Object.keys(fields).join(", ")})`);
   }
 
   for (const edu of delta.addEducation ?? []) {

@@ -44,6 +44,41 @@ export const deltaSchema = z.object({
       }),
     )
     .optional(),
+  // Finds an existing experience by company+role (case-insensitive) and patches only the
+  // given fields — company/role are the lookup key, not themselves editable here (a rename
+  // is rare enough to not need supporting yet). Distinct from addExperiences specifically so
+  // "rewrite my Livlong description" can't accidentally create a second Livlong entry — see
+  // apply-delta.ts, which reports a clear "no matching experience" message rather than
+  // silently doing nothing when the company/role doesn't match exactly.
+  updateExperiences: z
+    .array(
+      z.object({
+        company: z.string(),
+        role: z.string(),
+        description: z.string().optional(),
+        location: z.string().optional(),
+        employmentType: z.enum(["full-time", "part-time", "freelance", "internship"]).optional(),
+        techUsed: z.array(z.string()).optional(),
+        endDate: z.string().optional(),
+        isCurrent: z.boolean().optional(),
+      }),
+    )
+    .optional(),
+  // Same idea as updateExperiences, keyed by project name.
+  updateProjects: z
+    .array(
+      z.object({
+        name: z.string(),
+        description: z.string().optional(),
+        url: z.string().optional(),
+        github: z.string().optional(),
+        tech: z.array(z.string()).optional(),
+        featured: z.boolean().optional(),
+        status: z.enum(["active", "archived", "wip"]).optional(),
+        endDate: z.string().optional(),
+      }),
+    )
+    .optional(),
   addEducation: z
     .array(
       z.object({
@@ -149,6 +184,43 @@ export const deltaJsonSchema = {
         required: ["company", "role", "startDate"],
       },
     },
+    updateExperiences: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          company: { type: "string", description: "Must match an existing experience's company exactly (case-insensitive) — the lookup key, not itself editable here" },
+          role: { type: "string", description: "Must match an existing experience's role exactly (case-insensitive) — the lookup key, not itself editable here" },
+          description: { type: "string" },
+          location: { type: "string" },
+          employmentType: {
+            type: "string",
+            enum: ["full-time", "part-time", "freelance", "internship"],
+          },
+          techUsed: { type: "array", items: { type: "string" } },
+          endDate: { type: "string" },
+          isCurrent: { type: "boolean" },
+        },
+        required: ["company", "role"],
+      },
+    },
+    updateProjects: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          name: { type: "string", description: "Must match an existing project's name exactly (case-insensitive) — the lookup key, not itself editable here" },
+          description: { type: "string" },
+          url: { type: "string" },
+          github: { type: "string" },
+          tech: { type: "array", items: { type: "string" } },
+          featured: { type: "boolean" },
+          status: { type: "string", enum: ["active", "archived", "wip"] },
+          endDate: { type: "string" },
+        },
+        required: ["name"],
+      },
+    },
     addEducation: {
       type: "array",
       items: {
@@ -201,9 +273,40 @@ export const DELTA_SYSTEM_PROMPT = `You convert a developer's casual, natural-la
 
 Rules:
 - Only include fields the message actually supports. Don't invent dates, tech, or details.
-- "I learned X" or "I've been using X" → addSkills (infer a reasonable category and level from context).
-- "I shipped/built/launched a project called X" → addProjects.
-- "I started at X as a Y" → addExperiences with isCurrent: true.
+- "I learned X" or "I've been using X" → addSkills (infer a reasonable category and level from
+  context). Check the profile's existing skills first: the server only blocks an exact
+  case-insensitive name match, so if X is really the same skill already listed under a
+  different name or abbreviation ("Express" when "Express.js" is already there, "OpenAI" when
+  "OpenAI API" is already there), don't add a near-duplicate — omit it, since it's already
+  represented.
+- "I shipped/built/launched a project called X" → addProjects, only when X is an independent,
+  freestanding thing with its own name — a side project, an app, an open-source tool. A
+  feature, migration, or achievement described AS PART OF a job (e.g. "I migrated our app to
+  Next.js at work", "I built the search feature for my employer's product") is NOT a project —
+  it belongs in that experience's own description, not as a separate addProjects entry. When in
+  doubt whether something is a standalone project or just a detail of an existing job, treat it
+  as a detail and omit it rather than inventing a new project record.
+- "I started at X as a Y" → addExperiences with isCurrent: true, but only if X + that role
+  doesn't already appear in the profile's experience list.
+- "Rewrite/update/improve my description at X (as Y)" or any correction to an existing job's
+  details → updateExperiences, with company and role copied EXACTLY as they already appear in
+  the profile (that's the lookup key, not new text to save) and only the changed field(s) set.
+  Never use addExperiences for this — that creates a second, duplicate entry instead of fixing
+  the one that exists. If you're not sure the company + role you have matches an existing entry
+  exactly, use get_full_profile-equivalent context already given to you to copy the exact
+  existing spelling rather than guessing.
+- "Rewrite/update/improve my project X's description" → updateProjects the same way, keyed by
+  the project's exact existing name. Never use addProjects for an existing project.
 - "I earned/got/passed the X certification" → addCertifications.
-- "I left X" / "I'm no longer at X" → do NOT delete or modify experience automatically; that requires human review. Omit it from the delta.
+- "I left X" / "I'm no longer at X" → do NOT delete experience automatically; that requires
+  human review and removal through remove_experience. You may set isCurrent: false and an
+  endDate via updateExperiences if given one, but never delete or fabricate an end date.
+- "Update/change/set my summary (or bio, or about-me) to: ..." → profileUpdates.bio, with the
+  exact text given, verbatim. "Summary" and "bio" are the same field — the profile has no
+  separate "summary" field, so never skip a summary request just because the literal word
+  "bio" wasn't used.
+- "Update/change/set my headline (or title) to: ..." → profileUpdates.headline, verbatim.
+- Any other direct "update my [name/email/phone/location/website/github/linkedin/twitter] to:
+  ..." → the matching profileUpdates field, verbatim. Don't paraphrase or shorten text the user
+  gave you exactly — use it as-is.
 - If nothing in the message maps to a profile change, call the ${DELTA_TOOL_NAME} tool with all fields omitted.`;
