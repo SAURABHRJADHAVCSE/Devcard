@@ -10,7 +10,7 @@ function TemplateCard({ template }: { template: PdfTemplateInfo }) {
   const downloadUrl = `/api/pdf?template=${template.id}`;
 
   return (
-    <Card>
+    <Card className="transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-lg hover:shadow-slate-950/5">
       <CardContent className="flex flex-col gap-3">
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -26,11 +26,11 @@ function TemplateCard({ template }: { template: PdfTemplateInfo }) {
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-lg border border-border bg-muted/30" style={{ aspectRatio: "1 / 1.35" }}>
+        <div className="overflow-hidden rounded-xl border border-border/80 bg-muted/30 shadow-inner" style={{ aspectRatio: "1 / 1.35" }}>
           <iframe src={previewUrl} title={`${template.name} preview`} loading="lazy" className="h-full w-full" />
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 border-t border-border/70 pt-4">
           <Button size="sm" variant="outline" className="gap-1.5" render={<a href={previewUrl} target="_blank" rel="noreferrer" />}>
             <ExternalLink size={14} /> Open full size
           </Button>
@@ -57,7 +57,7 @@ export function ResumesPage() {
   if (templates.length === 0) return <div className="text-muted-foreground">Loading…</div>;
 
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+    <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
       {templates.map((t) => (
         <TemplateCard key={t.id} template={t} />
       ))}

@@ -27,7 +27,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
-  return <h2 className="mb-4 text-sm font-semibold tracking-wide text-muted-foreground uppercase">{children}</h2>;
+  return <h2 className="mb-4 text-xs font-bold tracking-[0.12em] text-muted-foreground uppercase">{children}</h2>;
 }
 
 function TechBadges({ tech }: { tech: string[] }) {
@@ -56,7 +56,7 @@ function DeleteButton({ label, onConfirm }: { label: string; onConfirm: () => vo
       onClick={() => {
         if (window.confirm(`Remove "${label}" from your knowledge base? This can't be undone.`)) onConfirm();
       }}
-      className="absolute top-2 right-2 text-muted-foreground opacity-0 transition-opacity hover:bg-destructive/10 hover:text-destructive group-hover:opacity-100"
+      className="absolute top-2 right-2 text-muted-foreground opacity-100 transition-opacity hover:bg-destructive/10 hover:text-destructive sm:opacity-0 sm:group-hover:opacity-100"
     >
       <X size={13} />
     </Button>
@@ -94,9 +94,12 @@ function CardsView({ full, onChange }: { full: FullProfile; onChange: (full: Ful
 
   return (
     <div className="space-y-10">
-      <Card>
+      <Card className="border-primary/10 bg-gradient-to-br from-card via-card to-primary/[0.035]">
         <CardContent className="pt-2">
-          <h1 className="text-3xl font-extrabold tracking-tight">{profile?.name || "Untitled profile"}</h1>
+          <div className="mb-5 flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-lg font-bold text-primary">
+            {(profile?.name || "U").slice(0, 1).toUpperCase()}
+          </div>
+          <h1 className="text-3xl font-bold tracking-[-0.04em]">{profile?.name || "Untitled profile"}</h1>
           {profile?.headline && <p className="mt-1 text-lg text-muted-foreground">{profile.headline}</p>}
           {profile?.bio && <p className="mt-4 max-w-2xl leading-relaxed text-foreground/80">{profile.bio}</p>}
           {contact.length > 0 && (
@@ -128,7 +131,7 @@ function CardsView({ full, onChange }: { full: FullProfile; onChange: (full: Ful
                         onClick={() => {
                           if (window.confirm(`Remove "${s.name}" from your skills? This can't be undone.`)) deleteSkill(s.id).then(onChange);
                         }}
-                        className="ml-1 rounded-full p-0.5 opacity-0 transition-opacity hover:bg-destructive/20 hover:text-destructive group-hover:opacity-100"
+                        className="ml-1 rounded-full p-0.5 opacity-100 transition-opacity hover:bg-destructive/20 hover:text-destructive sm:opacity-0 sm:group-hover:opacity-100"
                       >
                         <X size={10} />
                       </button>
@@ -146,7 +149,7 @@ function CardsView({ full, onChange }: { full: FullProfile; onChange: (full: Ful
           <SectionTitle>Experience</SectionTitle>
           <div className="space-y-4">
             {experiences.map((e) => (
-              <Card key={e.id} className="group relative">
+              <Card key={e.id} className="group relative shadow-none transition-colors hover:border-primary/20">
                 <CardContent>
                   <DeleteButton label={`${e.role} at ${e.company}`} onConfirm={() => deleteExperience(e.id).then(onChange)} />
                   <div className="flex items-baseline justify-between gap-4 pr-6">
@@ -172,7 +175,7 @@ function CardsView({ full, onChange }: { full: FullProfile; onChange: (full: Ful
           <SectionTitle>Projects</SectionTitle>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {projects.map((p) => (
-              <Card key={p.id} className="group relative">
+              <Card key={p.id} className="group relative shadow-none transition-colors hover:border-primary/20">
                 <CardContent>
                   <DeleteButton label={p.name} onConfirm={() => deleteProject(p.id).then(onChange)} />
                   <div className="pr-6 font-semibold">{p.name}</div>
@@ -190,7 +193,7 @@ function CardsView({ full, onChange }: { full: FullProfile; onChange: (full: Ful
           <SectionTitle>Education</SectionTitle>
           <div className="space-y-3">
             {education.map((ed) => (
-              <Card key={ed.id} className="group relative">
+              <Card key={ed.id} className="group relative shadow-none transition-colors hover:border-primary/20">
                 <CardContent>
                   <DeleteButton label={ed.institution} onConfirm={() => deleteEducation(ed.id).then(onChange)} />
                   <div className="pr-6 font-semibold">{[ed.degree, ed.field].filter(Boolean).join(" in ")}</div>
@@ -210,7 +213,7 @@ function CardsView({ full, onChange }: { full: FullProfile; onChange: (full: Ful
           <SectionTitle>Certifications</SectionTitle>
           <div className="space-y-3">
             {certifications.map((c) => (
-              <Card key={c.id} className="group relative">
+              <Card key={c.id} className="group relative shadow-none transition-colors hover:border-primary/20">
                 <CardContent>
                   <DeleteButton label={c.name} onConfirm={() => deleteCertification(c.id).then(onChange)} />
                   <div className="pr-6 font-semibold">{c.name}</div>

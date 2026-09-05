@@ -17,7 +17,7 @@ import { Badge, badgeVariants } from "@/components/ui/badge";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 
 const inputClass =
-  "flex h-9 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30";
+  "flex h-10 w-full rounded-xl border border-input bg-background/65 px-3 text-sm outline-none transition-all placeholder:text-muted-foreground/70 focus-visible:border-ring focus-visible:bg-card focus-visible:ring-3 focus-visible:ring-ring/20 dark:bg-input/20";
 
 const STATUS_OPTIONS: ApplicationStatus[] = ["applied", "interviewing", "rejected", "offer"];
 
@@ -73,7 +73,7 @@ function PlatformManager({ platforms, onAdded, onRemoved }: { platforms: JobPlat
             </Badge>
           ))}
         </div>
-        <div className="flex gap-2">
+        <div className="grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
           <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Name, e.g. LinkedIn" className={inputClass} />
           <input value={baseUrl} onChange={(e) => setBaseUrl(e.target.value)} placeholder="Base URL, e.g. linkedin.com" className={inputClass} />
           <Button size="sm" onClick={handleAdd} disabled={saving || !name.trim() || !baseUrl.trim()} className="shrink-0 gap-1.5">
@@ -125,7 +125,7 @@ function RecordApplicationForm({
     <Card>
       <CardContent className="space-y-3">
         <p className="text-sm font-medium">Record an application</p>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           <input value={company} onChange={(e) => setCompany(e.target.value)} placeholder="Company" className={inputClass} />
           <input value={role} onChange={(e) => setRole(e.target.value)} placeholder="Role" className={inputClass} />
         </div>

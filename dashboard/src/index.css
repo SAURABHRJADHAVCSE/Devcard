@@ -14,53 +14,53 @@
 @custom-variant data-vertical (&[data-orientation="vertical"]);
 
 :root {
-  --radius: 0.65rem;
+  --radius: 0.8rem;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  --background: #f6f7fb;
+  --foreground: #171923;
   --card: #ffffff;
   --card-foreground: #0f172a;
   --popover: #ffffff;
   --popover-foreground: #0f172a;
-  --primary: #4f46e5;
+  --primary: #5850ec;
   --primary-foreground: #ffffff;
-  --secondary: #eef2ff;
-  --secondary-foreground: #4338ca;
-  --muted: #f1f5f9;
-  --muted-foreground: #64748b;
-  --accent: #eef2ff;
-  --accent-foreground: #4338ca;
+  --secondary: #eeedff;
+  --secondary-foreground: #4438ca;
+  --muted: #eff1f6;
+  --muted-foreground: #687083;
+  --accent: #eeedff;
+  --accent-foreground: #4438ca;
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
-  --border: #e2e8f0;
-  --input: #e2e8f0;
-  --ring: #818cf8;
+  --border: #e2e4eb;
+  --input: #d9dce5;
+  --ring: #7670ed;
 }
 
 .dark {
-  --background: #0b0f1a;
-  --foreground: #e2e8f0;
-  --card: #111827;
-  --card-foreground: #e2e8f0;
-  --popover: #111827;
-  --popover-foreground: #e2e8f0;
-  --primary: #818cf8;
-  --primary-foreground: #1e1b4b;
-  --secondary: #1e1b4b;
-  --secondary-foreground: #c7d2fe;
-  --muted: #1e293b;
-  --muted-foreground: #94a3b8;
-  --accent: #1e1b4b;
-  --accent-foreground: #c7d2fe;
+  --background: #0e1017;
+  --foreground: #edeef4;
+  --card: #151821;
+  --card-foreground: #edeef4;
+  --popover: #151821;
+  --popover-foreground: #edeef4;
+  --primary: #918cf7;
+  --primary-foreground: #11121a;
+  --secondary: #292646;
+  --secondary-foreground: #d8d5ff;
+  --muted: #1c202b;
+  --muted-foreground: #989fb0;
+  --accent: #292646;
+  --accent-foreground: #d8d5ff;
   --destructive: #f87171;
   --destructive-foreground: #1c0a0a;
-  --border: #1e293b;
-  --input: #1e293b;
-  --ring: #6366f1;
+  --border: #282c38;
+  --input: #333846;
+  --ring: #918cf7;
 }
 
 @theme inline {
@@ -98,6 +98,24 @@ body {
   color: var(--color-foreground);
   font-feature-settings: "cv11", "ss01";
   -webkit-font-smoothing: antialiased;
+  min-width: 320px;
+  min-height: 100vh;
+  letter-spacing: -0.006em;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--primary) 22%, transparent);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+button,
+a,
+select {
+  -webkit-tap-highlight-color: transparent;
 }
 
 .prose-devcard h1 {

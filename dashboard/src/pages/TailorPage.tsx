@@ -102,7 +102,7 @@ function TailorForm({ onSaved }: { onSaved: (version: ResumeVersion) => void }) 
   }
 
   return (
-    <Card>
+    <Card className="border-primary/10 bg-gradient-to-b from-card to-primary/[0.02]">
       <CardContent className="space-y-4">
         <div>
           <label className="mb-1.5 block text-sm font-medium">Resume name</label>
@@ -110,7 +110,7 @@ function TailorForm({ onSaved }: { onSaved: (version: ResumeVersion) => void }) 
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder='e.g. "Google — Senior SWE, Jan 2026"'
-            className="flex h-9 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
+            className="flex h-10 w-full rounded-xl border border-input bg-background/65 px-3 text-sm outline-none transition-all placeholder:text-muted-foreground/70 focus-visible:border-ring focus-visible:bg-card focus-visible:ring-3 focus-visible:ring-ring/20 dark:bg-input/20"
           />
         </div>
 
@@ -208,7 +208,7 @@ function TailorForm({ onSaved }: { onSaved: (version: ResumeVersion) => void }) 
 function VersionRow({ version, onDelete }: { version: ResumeVersion; onDelete: (id: string) => void }) {
   return (
     <Card>
-      <CardContent className="flex items-center justify-between gap-4">
+      <CardContent className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div className="min-w-0">
           <div className="font-semibold">{version.name}</div>
           <div className="text-xs text-muted-foreground">
@@ -216,11 +216,11 @@ function VersionRow({ version, onDelete }: { version: ResumeVersion; onDelete: (
             {version.updatedAt && ` · updated ${new Date(version.updatedAt).toLocaleDateString()}`}
           </div>
         </div>
-        <div className="flex shrink-0 gap-2">
+        <div className="flex w-full shrink-0 gap-2 sm:w-auto">
           <Button
             size="sm"
             variant="outline"
-            className="gap-1.5"
+            className="flex-1 gap-1.5 sm:flex-none"
             render={<a href={`/api/pdf?version=${version.id}`} download />}
           >
             <Download size={14} /> Download

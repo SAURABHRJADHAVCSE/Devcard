@@ -155,7 +155,13 @@ Tailor my Devcard resume to this exact role. Use tailor_resume to analyze it aga
     title: "Finding and prepping fresh jobs with Apify",
     prompts: [
       {
-        text: `Call list_job_platforms first, and search those sites (add any with add_job_platform if I mention a new one). Search for fresh [job title(s)] openings posted in the last [N] days using the Apify job tool. For each posting, pull its JD text and cross-check it against my Devcard profile (get_full_profile) — rank them by how strong a match I am. For anything that's a strong match, run tailor_resume against that JD: if it flags a required skill I don't have, ask me before including it, same rule as always — never assume I have something I haven't told you about. Save the good ones with save_resume_version named '<Company> — <Role>' and generate the PDF with get_resume_pdf. When you're done, give me one table: Job Title | Company | Match % | Why | Resume Version Saved | PDF link. I'll handle actually submitting each one myself (or via Claude for Chrome) — your job is just finding them and getting a truthful, tailored resume ready for each.`,
+        text: `Find and prepare fresh job applications for me, step by step:
+1. Call list_job_platforms and search those sites (register a new one with add_job_platform if I mention one that isn't there yet).
+2. Search for fresh [job title(s)] openings posted in the last [N] days, using the Apify job tool.
+3. For each posting, pull its JD text and cross-check it against my Devcard profile (get_full_profile) — rank them by how strong a match I am.
+4. For anything that's a strong match: run tailor_resume against that JD (if it flags a required skill I don't have, ask me before including it — never assume I have something I haven't told you about), then save_resume_version named '<Company> — <Role>' and generate the PDF with get_resume_pdf.
+5. Give me one final table: Job Title | Company | Match % | Why | Resume Version Saved | PDF link.
+I'll handle the actual submitting myself, or via Claude for Chrome — your job stops at 'resume ready.'`,
         note: "Needs an Apify job-search tool connected in this session — ends at \"resume ready,\" doesn't submit anything itself",
       },
     ],
@@ -226,7 +232,7 @@ export function GuidePage() {
   return (
     <div className="space-y-10">
       <section>
-        <div className="mb-3 flex items-start justify-between gap-4">
+        <div className="mb-3 flex flex-col items-start justify-between gap-4 sm:flex-row">
           <div>
             <h2 className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">
               Keep it always in sync
@@ -255,7 +261,8 @@ export function GuidePage() {
         </h2>
         <p className="mb-4 text-sm text-muted-foreground">
           Copy-paste starting points, once the standing instruction above is in place (or even without it — these
-          work as one-off requests too).
+          work as one-off requests too). Anything in <code className="text-xs">[brackets]</code> is a
+          placeholder — replace it with your own details before sending; everything else is literal.
         </p>
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
           {CHEAT_SHEET.map((category) => (
