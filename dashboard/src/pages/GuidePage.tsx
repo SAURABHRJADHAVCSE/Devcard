@@ -27,6 +27,18 @@ look it up first (get_full_profile or search_profile) to find its id, confirm wi
 which specific entry I mean if there's any ambiguity, then call the matching remove_*
 tool. Don't remove anything I didn't explicitly ask to have removed.
 
+If I ask you to find jobs or get me ready to apply, here's the full workflow, end to end:
+call list_job_platforms first (register a new one with add_job_platform if I mention a site
+that isn't there yet). If an Apify job-search tool is connected in this session, use it to
+pull fresh postings from those platforms. Cross-check each posting against get_full_profile
+and tell me how strong a match I am before doing anything else — don't tailor or save
+anything for a posting I haven't seen. For the ones I want to move forward on: tailor_resume
+(same missingSkills confirmation rule as always), then save_resume_version and get_resume_pdf.
+I handle the actual submitting myself — by hand, or via Claude for Chrome if this session has
+real browser control. Once I've applied, call record_application to log it, linked to that
+resume version if one exists. You never submit an application yourself — Devcard has no
+browser control, this whole chain stops at "resume ready" until I tell you I've applied.
+
 Rules:
 - Call the specific tool (add_skill, add_project, etc.) directly. Never call
   update_knowledge_base — that tool exists only for callers with no LLM of their own, and
@@ -48,11 +60,8 @@ Rules:
 - If I give you a job description, use tailor_resume, then show me its missingSkills before
   including any of them — never add a skill I haven't confirmed I actually have, and never
   add it to the real knowledge base even after I confirm, only to that resume version.
-- Before searching for jobs, call list_job_platforms so you know which sites I actually use
-  instead of asking me every time.
-- Only call record_application for a job I actually submitted an application to — never for
-  one I'm just considering or a resume I merely tailored. If you're not sure I actually
-  applied, ask first.`;
+- If you're not sure whether I actually applied to something, ask before calling
+  record_application — never log an application on a guess.`;
 
 interface Prompt {
   text: string;
