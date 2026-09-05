@@ -61,15 +61,36 @@ tool. Don't remove anything I didn't explicitly ask to have removed.
 
 If I ask you to find jobs or get me ready to apply, here's the full workflow, end to end:
 call list_job_platforms first (register a new one with add_job_platform if I mention a site
-that isn't there yet). If an Apify job-search tool is connected in this session, use it to
-pull fresh postings from those platforms. Cross-check each posting against get_full_profile
-and tell me how strong a match I am before doing anything else — don't tailor or save
-anything for a posting I haven't seen. For the ones I want to move forward on: tailor_resume
-(same missingSkills confirmation rule as always), then save_resume_version and get_resume_pdf.
-I handle the actual submitting myself — by hand, or via Claude for Chrome if this session has
-real browser control. Once I've applied, call record_application to log it, linked to that
-resume version if one exists. You never submit an application yourself — Devcard has no
-browser control, this whole chain stops at "resume ready" until I tell you I've applied.
+that isn't there yet). Then actually search those platforms for fresh postings: navigate to
+each registered platform's own search directly (e.g. via Claude for Chrome) and use its
+filters — that's the default, since applying happens on that same site anyway. Use an Apify
+job-search tool instead only when I'm not searching through a specific job portal (or want a
+broader sweep) — that's what it's actually good for, crawling the wider internet for postings,
+not standing in for a portal's own search. Cross-check each posting against
+get_full_profile and tell me how strong a match I am before doing anything else — don't tailor
+or save anything for a posting I haven't seen. For the ones I want to move forward on:
+tailor_resume (same missingSkills confirmation rule as always), then save_resume_version and
+get_resume_pdf. If tailor_resume itself fails or isn't available (e.g. no AI provider key
+configured on the server), don't stop — do the analysis yourself directly: compare the JD
+against get_full_profile's real data, write the tailored summary, pick matched skills, and
+flag any JD-required skill that isn't in the profile before including it, same rules as if
+tailor_resume had produced it. save_resume_version and get_resume_pdf don't need any AI
+provider configured, so they still work either way. For the actual applying, use the Claude in
+Chrome browser extension specifically — the one running in my real Chrome browser, where I'm
+already logged into these job sites — never a generic/internal/sandboxed web-browsing or
+fetch tool. Only my real browser session has those logins, so only that extension can actually
+get through a job portal's login wall and submit something; a sandboxed tool will just hit the
+login page and stall, which is not a reason to give up and hand me links instead. If this
+session has that extension connected: open the posting, fill in the form fields from my
+profile the same way you'd fill any form, and submit it. If the form has a real file-upload
+field for the resume (not just pasted text), use the exact local file path get_resume_pdf gave
+you for that version to attach it — never a download link or a guessed path. Pause and tell me
+if you hit a CAPTCHA or a login wall it genuinely can't get through, rather than guessing or
+claiming you submitted something you didn't. If it isn't connected, say so plainly and hand me
+the tailored
+resume so I can apply myself — don't quietly fall back to a sandboxed browser and pretend
+that's the same thing. Either way, once an application is actually submitted, call
+record_application to log it, linked to that resume version.
 
 Rules:
 - Call the specific tool (add_skill, add_project, etc.) directly. Never call
@@ -100,6 +121,11 @@ Rules:
   and selectable. Never use keyword stuffing, hidden text, graphics, tables, or unsupported claims.
 - If you're not sure whether I actually applied to something, ask before calling
   record_application — never log an application on a guess.
+- Any platform already in list_job_platforms is my standing permission to search and apply
+  there — don't ask me for permission per job or per platform once it's registered. The
+  truthfulness rules above still always apply regardless (confirm before including a missing
+  skill, never inflate a match score) — those are accuracy checks, not permission checks, and
+  standing permission to apply never overrides them.
 ```
 
 ---
@@ -109,38 +135,6 @@ Rules:
 Copy-paste starting points, once the standing instruction above is in place (or even
 without it — these work as one-off requests too). Anything in `[brackets]` is a placeholder —
 replace it with your own details before sending; everything else is literal.
-
-**Adding a skill**
-> "I learned Kubernetes this week, add it as an intermediate skill"
-> "I've been writing Go for a few years now, add that"
-
-**Adding a project**
-> "I shipped a side project called Pulsecheck, an AI-powered uptime monitor, add it as a project"
-> "Add my side project 'kalshi-bot' — a Python trading bot using the Kalshi API"
-
-**Adding / updating experience**
-> "I just started at Acme Corp as a Senior Backend Engineer"
-> "I've been a freelance developer since January 2023, add that to my experience"
-
-**Education / certifications**
-> "Add my B.Tech in Computer Science from XYZ University, 2018 to 2022"
-> "I passed the AWS Certified Cloud Practitioner exam in March 2025, expires March 2028"
-
-**Updating your profile**
-> "Update my headline to 'Full-stack engineer building AI products'"
-> "Set my bio to: ..."
-
-**Retrieving / searching**
-> "What does my Devcard say about my React experience?"
-> "Show me everything tagged with Docker"
-> "Give me my full profile as JSON"
-
-**Exporting**
-> "Give me my resume as markdown"
-> "Generate my resume as a polished ATS-readable PDF. Keep it single-column and selectable,
-> use standard section headings, and include only facts already stored in my Devcard profile.
-> Give me the download link."
-> "Format my Devcard profile as a two-paragraph bio for a LinkedIn summary"
 
 **Tailoring a resume to a job** *(works the same from Claude Code, Claude Desktop, or any other MCP-connected tool)*
 > "Here's a job description:
@@ -179,32 +173,57 @@ replace it with your own details before sending; everything else is literal.
 > Estimated Match % | Why I'm a Strong Fit | Top 3 Missing Keywords to Add | Where to Search.
 > Base every claim on what's actually in my profile — no inflating my fit to hit round numbers."
 
-**Finding and prepping fresh jobs with Apify** *(needs an Apify job-search tool connected in
-this session — this workflow ends at "resume ready," it doesn't submit anything itself)*
-> "Find and prepare fresh job applications for me, step by step:
+**Finding, prepping, and applying to fresh jobs** *(searches each platform's own search
+directly by default; falls back to an Apify job-search tool for a broader internet-wide crawl
+when not confined to one portal; applies for you via the Claude in Chrome extension — your
+real, logged-in browser session, not a sandboxed browsing tool — if it's connected, otherwise
+hands you the tailored PDFs to apply yourself)*
+> "Find, prepare, and apply to fresh job applications for me, step by step:
 > 1. Call list_job_platforms and search those sites (register a new one with add_job_platform
 >    if I mention one that isn't there yet).
-> 2. Search for fresh [job title(s)] openings posted in the last [N] days, using the Apify job
->    tool.
+> 2. Search for fresh [job title(s)] openings posted in the last [N] days on each platform —
+>    navigate to each platform's own search directly (e.g. via Claude for Chrome) and use its
+>    filters by default; use an Apify job-search tool instead only if I'm not searching a
+>    specific portal or want a broader internet-wide crawl.
 > 3. For each posting, pull its JD text and cross-check it against my Devcard profile
 >    (get_full_profile). Rank roles by a conservative estimated match and prioritize roles
 >    where my truthful profile can credibly reach 90+ after tailoring.
 > 4. For each strong match, run tailor_resume and show estimatedMatchScore, scoreRationale,
->    atsWarnings, and missingSkills. Ask before including any missing skill and never inflate
->    a score. Then save_resume_version named '<Company> - <Role>' and generate the polished
->    PDF with get_resume_pdf.
-> 5. Give me one final table: Job Title | Company | Estimated Match | Evidence | Remaining
->    Gaps | Resume Version | PDF link. Never imply that a score guarantees an interview.
-> I'll handle the actual submitting myself, or via Claude for Chrome — your job stops at
-> 'resume ready.'"
+>    atsWarnings, and missingSkills. If tailor_resume fails or isn't available, do this
+>    analysis yourself directly instead of stopping — same rules either way: ask before
+>    including any missing skill, never inflate a score. Then save_resume_version named
+>    '<Company> - <Role>' and generate the polished PDF with get_resume_pdf.
+> 5. Use the Claude in Chrome extension specifically for this step — the one in my real Chrome
+>    browser where I'm already logged into these sites, never a generic/sandboxed browsing
+>    tool that hits the login page and gives up. If it's connected: for each strong match,
+>    open the posting, fill in the application form from my profile, and submit it. If the
+>    form has a real file-upload field for the resume (not just pasted text), use the exact
+>    local file path get_resume_pdf gave you for that version — never a download link or a
+>    guessed path — to attach it. Pause and tell me if you hit a CAPTCHA or a login wall it
+>    genuinely can't get through, instead of guessing or claiming you submitted something you
+>    didn't. If it isn't connected, say so and skip this step — I'll apply myself from the
+>    saved PDFs.
+> 6. For every application you actually submitted, call record_application to log it, linked
+>    to its resume version. Give me one final table: Job Title | Company | Estimated Match |
+>    Resume Version | Applied (yes/no) | PDF link. Never imply that a score guarantees an
+>    interview."
+
+**Daily job hunt — Naukri, Hirist, Wellfound** *(a ready-to-fire, fixed-scope version of the
+prompt above — no brackets to fill in, run it as-is)*
+> "Run today's job hunt: pull 10 fresh openings each from Naukri, Hirist, and Wellfound
+> (register any that aren't already in list_job_platforms). Cross-check every posting against
+> my Devcard profile and only move forward on strong matches — skip weak ones rather than
+> forcing all 30 through. For each strong match: tailor_resume (or do the analysis yourself if
+> it's unavailable), save_resume_version, and generate the PDF. Then actually apply via the
+> Claude in Chrome extension — I've already given standing permission for these platforms, so
+> don't ask me per job, just go; only pause if you hit a CAPTCHA or a login wall you genuinely
+> can't get through. Log every submitted application with record_application, then give me the
+> final table: Job Title | Company | Platform | Estimated Match | Applied (yes/no) | PDF
+> link."
 
 **Logging an application you just submitted** *(after you actually apply, via Claude for Chrome or by hand)*
 > "I just applied to [Role] at [Company] on [platform/URL]. Log it with record_application,
 > and link it to the '<Company> — <Role>' resume version if I saved one for it."
-
-**Cleanup**
-> "Remove jQuery from my skills, I don't use it anymore"
-> "I left Acme Corp last month — what should we update?" *(asks first, per the standing rule)*
 
 ---
 
@@ -329,7 +348,8 @@ standalone app window (own taskbar icon, no browser chrome).
   role, platform, date, status, linked resume PDF if one was tailored for it). Add a platform
   or record an application right from the tab, or let Claude do both via `add_job_platform` /
   `list_job_platforms` / `record_application` / `list_applications` / `update_application` (see
-  the cheat sheet's Apify and "logging an application" prompts) — same underlying data either
+  the cheat sheet's "Finding, prepping, and applying to fresh jobs" and "logging an
+  application" prompts) — same underlying data either
   way.
 - **Light/dark toggle** — bottom-left of the sidebar.
 
@@ -379,7 +399,7 @@ own to lean on.
 | `update_profile` | Name, headline, bio, contact info |
 | `get_full_profile` | Everything, as structured JSON |
 | `get_resume_text` | Everything, as clean Markdown |
-| `get_resume_pdf` / `list_resume_templates` | The actual PDF file (base64), and which templates exist. `get_resume_pdf` takes an optional `versionId`, and always also returns a direct `http://localhost:6366/api/pdf?...` download link as text — some MCP clients (Claude Desktop, as of now) don't surface the base64 file itself in chat, so the link is the reliable way to actually get the PDF |
+| `get_resume_pdf` / `list_resume_templates` | The actual PDF file (base64), and which templates exist. `get_resume_pdf` takes an optional `versionId`, and always also returns a direct `http://localhost:6366/api/pdf?...` download link plus the exact local file path it just saved the PDF to (`~/Devcard/resumes/...`, filename includes the version name so different tailored versions never collide) — use that local path, not the download link, when a job application form needs a real file upload |
 | `tailor_resume` | Analyzes a JD against the real profile; proposes summary/matchedSkills/missingSkills/suggestedProjects — saves nothing |
 | `save_resume_version` / `list_resume_versions` / `get_resume_version` / `remove_resume_version` | Save, list, inspect, and delete named tailored resume versions |
 | `add_job_platform` / `list_job_platforms` / `remove_job_platform` | Job sites you actually use (name + base URL) — check before a job search instead of asking every time |

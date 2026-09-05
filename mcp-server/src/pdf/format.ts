@@ -45,13 +45,24 @@ export function normalizeUrl(url: string): string {
 
 // "FirstName-LastName-Resume.pdf" per standard convention — Title Case each
 // word, hyphenate, append "-Resume". Falls back to "Resume.pdf" for a blank
-// name rather than producing a stray leading/trailing hyphen.
-export function resumeFilename(name: string | null | undefined): string {
+// name rather than producing a stray leading/trailing hyphen. `versionLabel`
+// (a saved resume version's own name, e.g. "Google - Senior SWE") appends a
+// slugified suffix so multiple tailored versions for the same person don't
+// all collide on one identical filename — this matters once a job-hunt
+// pipeline is generating several PDFs in the same run and needs to
+// reference the right one for each application, not just download one for
+// a human to glance at.
+export function resumeFilename(name: string | null | undefined, versionLabel?: string | null): string {
   const words = (name ?? "")
     .split(/\s+/)
     .filter(Boolean)
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1));
-  return words.length > 0 ? `${words.join("-")}-Resume.pdf` : "Resume.pdf";
+  const base = words.length > 0 ? `${words.join("-")}-Resume` : "Resume";
+  const suffix = versionLabel
+    ?.trim()
+    .replace(/[^a-zA-Z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return suffix ? `${base}-${suffix}.pdf` : `${base}.pdf`;
 }
 
 // The DB stores one free-text `description` per experience/project (not a

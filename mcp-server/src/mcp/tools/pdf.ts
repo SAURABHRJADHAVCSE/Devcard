@@ -6,6 +6,7 @@ import { renderResumePdf } from "../../pdf/render";
 import { applyResumeVersion } from "../../pdf/tailor";
 import { PDF_TEMPLATES } from "../../pdf/registry";
 import { resumeFilename } from "../../pdf/format";
+import { saveResumePdfLocally } from "../../pdf/local-save";
 
 // There's no PDF file sitting on disk to "edit" — it's rendered fresh from
 // the profile every time. So "editing the resume PDF" from Claude means
@@ -59,7 +60,13 @@ export function registerPdfTools(server: McpServer) {
       const merged = applyResumeVersion(full, version);
 
       const result = await renderResumePdf(resolvedTemplate, merged);
-      const filename = resumeFilename(full.profile?.name);
+      const filename = resumeFilename(full.profile?.name, version?.name);
+      // Written to a predictable local path (not just served over HTTP) so
+      // a browser-automation tool filling out a job application's file
+      // upload input has an actual file on disk to point at — a download
+      // link or a base64 blob in this response aren't usable for that. See
+      // pdf/local-save.ts.
+      const localPath = saveResumePdfLocally(result.buffer, filename);
 
       // Claude Desktop's UI currently doesn't surface MCP EmbeddedResource
       // blocks (the `resource`/blob content below) as a downloadable
@@ -83,9 +90,10 @@ export function registerPdfTools(server: McpServer) {
               `Generated ${filename} — ${result.density} density, ${result.pageCount} page${result.pageCount === 1 ? "" : "s"}${
                 result.fitOnePage ? "" : " (didn't fit one page even at the tightest density — content genuinely exceeds one page)"
               }.\n\n` +
-              `Download it directly: ${downloadUrl}\n` +
+              `Local file (use this exact path to upload/attach it on a job application form that needs a real file, e.g. via the Claude in Chrome extension): ${localPath}\n\n` +
+              `Download link: ${downloadUrl}\n` +
               `(Some MCP clients, including Claude Desktop as of now, can't surface the file this tool call also returns ` +
-              `directly in chat — this link always works instead, since it downloads straight from your local Devcard server.)`,
+              `directly in chat — the local path or download link above always work instead.)`,
           },
           {
             type: "resource",

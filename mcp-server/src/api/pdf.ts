@@ -32,7 +32,7 @@ pdfRouter.get("/", async (c) => {
 
   const { buffer, pageCount, fitOnePage } = await renderResumePdf(template, toRender);
 
-  const filename = resumeFilename(full.profile?.name);
+  const filename = resumeFilename(full.profile?.name, version?.name);
   // Default is a real download (attachment) — the dashboard's resume
   // previewer opts into `?disposition=inline` so the browser renders the
   // PDF in an <iframe> instead of triggering a save dialog.
