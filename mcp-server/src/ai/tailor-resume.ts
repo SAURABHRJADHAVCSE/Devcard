@@ -15,6 +15,15 @@ import { getFullProfile } from "../db/get-full-profile";
 // true of the person; they just don't get featured on this one-page resume.
 const MAX_MATCHED_SKILLS = 18;
 const MAX_SUMMARY_LENGTH = 500;
+// Matches the profile's own "featured" project default (see
+// pdf/tailor.ts::applyResumeVersion) — that default was already verified to
+// fit one page; a version's explicit projectNames is respected exactly, so
+// nothing else caps it if the model suggests more than the profile's own
+// default would show. Found via a real page-fit regression: two saved
+// versions with a correctly-capped 500-char summary and 18 skills still
+// rendered 2 pages because suggestedProjects had 3 entries instead of 2 —
+// the missing cap here, not the summary/skills logic, was the actual cause.
+const MAX_SUGGESTED_PROJECTS = 2;
 
 function uniqueNonEmpty(values: string[]): string[] {
   const seen = new Set<string>();
@@ -82,7 +91,8 @@ export async function tailorResume(jobDescription: string, requiredSkills?: stri
 
   const suggestedProjects = uniqueNonEmpty(parsed.data.suggestedProjects)
     .map((name) => realProjectNames.get(name.toLowerCase()))
-    .filter((name): name is string => Boolean(name));
+    .filter((name): name is string => Boolean(name))
+    .slice(0, MAX_SUGGESTED_PROJECTS);
 
   // A 90+ estimate is not credible while the JD still contains known skill
   // gaps. This server-side ceiling prevents any provider from inflating the

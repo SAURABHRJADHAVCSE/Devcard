@@ -66,15 +66,22 @@ each registered platform's own search directly (e.g. via Claude for Chrome) and 
 filters — that's the default, since applying happens on that same site anyway. Use an Apify
 job-search tool instead only when I'm not searching through a specific job portal (or want a
 broader sweep) — that's what it's actually good for, crawling the wider internet for postings,
-not standing in for a portal's own search. Cross-check each posting against
-get_full_profile and tell me how strong a match I am before doing anything else — don't tailor
-or save anything for a posting I haven't seen. For the ones I want to move forward on:
+not standing in for a portal's own search. Before doing anything else with a posting, check
+list_applications — if I've already applied to that exact company + role (or the same
+jobUrl), skip it and don't tailor or apply again, just note it was already applied to.
+Otherwise cross-check it against get_full_profile and tell me how strong a match I am — don't
+tailor or save anything for a posting I haven't seen. For the ones I want to move forward on:
 tailor_resume (same missingSkills confirmation rule as always), then save_resume_version and
 get_resume_pdf. If tailor_resume itself fails or isn't available (e.g. no AI provider key
 configured on the server), don't stop — do the analysis yourself directly: compare the JD
 against get_full_profile's real data, write the tailored summary, pick matched skills, and
 flag any JD-required skill that isn't in the profile before including it, same rules as if
-tailor_resume had produced it. save_resume_version and get_resume_pdf don't need any AI
+tailor_resume had produced it — including the hard numeric limits tailor_resume enforces in
+code, which you have to enforce yourself when doing this manually: summary under 500
+characters (roughly 2-3 sentences, not a paragraph), at most 18 matched skills. Those limits
+exist because the PDF has to fit one page — a longer summary or skill list you write by hand
+is exactly as likely to blow the page budget as a JD-required skill you invent, so treat both
+as equally real mistakes. save_resume_version and get_resume_pdf don't need any AI
 provider configured, so they still work either way. For the actual applying, use the Claude in
 Chrome browser extension specifically — the one running in my real Chrome browser, where I'm
 already logged into these job sites — never a generic/internal/sandboxed web-browsing or
@@ -185,13 +192,16 @@ hands you the tailored PDFs to apply yourself)*
 >    navigate to each platform's own search directly (e.g. via Claude for Chrome) and use its
 >    filters by default; use an Apify job-search tool instead only if I'm not searching a
 >    specific portal or want a broader internet-wide crawl.
-> 3. For each posting, pull its JD text and cross-check it against my Devcard profile
->    (get_full_profile). Rank roles by a conservative estimated match and prioritize roles
->    where my truthful profile can credibly reach 90+ after tailoring.
+> 3. Check list_applications and skip any posting (same company + role, or same URL) I've
+>    already applied to. For the rest, pull the JD text and cross-check it against my Devcard
+>    profile (get_full_profile). Rank roles by a conservative estimated match and prioritize
+>    roles where my truthful profile can credibly reach 90+ after tailoring.
 > 4. For each strong match, run tailor_resume and show estimatedMatchScore, scoreRationale,
 >    atsWarnings, and missingSkills. If tailor_resume fails or isn't available, do this
->    analysis yourself directly instead of stopping — same rules either way: ask before
->    including any missing skill, never inflate a score. Then save_resume_version named
+>    analysis yourself directly instead of stopping — same rules either way, including the
+>    hard limits tailor_resume enforces in code that you have to self-enforce by hand: summary
+>    under 500 characters, at most 18 matched skills. Ask before including any missing skill,
+>    never inflate a score. Then save_resume_version named
 >    '<Company> - <Role>' and generate the polished PDF with get_resume_pdf.
 > 5. Use the Claude in Chrome extension specifically for this step — the one in my real Chrome
 >    browser where I'm already logged into these sites, never a generic/sandboxed browsing
@@ -211,15 +221,18 @@ hands you the tailored PDFs to apply yourself)*
 **Daily job hunt — Naukri, Hirist, Wellfound** *(a ready-to-fire, fixed-scope version of the
 prompt above — no brackets to fill in, run it as-is)*
 > "Run today's job hunt: pull 10 fresh openings each from Naukri, Hirist, and Wellfound
-> (register any that aren't already in list_job_platforms). Cross-check every posting against
-> my Devcard profile and only move forward on strong matches — skip weak ones rather than
-> forcing all 30 through. For each strong match: tailor_resume (or do the analysis yourself if
-> it's unavailable), save_resume_version, and generate the PDF. Then actually apply via the
-> Claude in Chrome extension — I've already given standing permission for these platforms, so
-> don't ask me per job, just go; only pause if you hit a CAPTCHA or a login wall you genuinely
-> can't get through. Log every submitted application with record_application, then give me the
-> final table: Job Title | Company | Platform | Estimated Match | Applied (yes/no) | PDF
-> link."
+> (register any that aren't already in list_job_platforms). Check list_applications first and
+> skip any posting (same company + role, or same URL) I've already applied to — don't tailor
+> or apply to it twice. Cross-check every remaining posting against my Devcard profile and only
+> move forward on strong matches — skip weak ones rather than forcing all 30 through. For each
+> strong match: tailor_resume (or do the analysis yourself if it's unavailable — same hard
+> limits either way: summary under 500 characters, at most 18 matched skills),
+> save_resume_version, and generate the PDF. Then actually apply via the Claude in Chrome
+> extension — I've already given standing permission for these platforms, so don't ask me per
+> job, just go; only pause if you hit a CAPTCHA or a login wall you genuinely can't get
+> through. Log every submitted application with record_application, then give me the final
+> table: Job Title | Company | Platform | Estimated Match | Applied (yes/no) | PDF link. Also
+> tell me how many postings you skipped as already-applied."
 
 **Logging an application you just submitted** *(after you actually apply, via Claude for Chrome or by hand)*
 > "I just applied to [Role] at [Company] on [platform/URL]. Log it with record_application,

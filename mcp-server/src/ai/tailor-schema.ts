@@ -39,7 +39,7 @@ export const tailorJsonSchema = {
       type: "array",
       items: { type: "string" },
       description:
-        "Project names copied exactly from the profile's real projects list, most relevant to this job first. Never a project name that isn't literally in the profile.",
+        "At most 2 project names copied exactly from the profile's real projects list, most relevant to this job first. This is a one-page resume's featured-projects section, not every project the person has ever built — pick the 2 most relevant to this specific job. Never a project name that isn't literally in the profile.",
     },
     estimatedMatchScore: {
       type: "integer",
@@ -84,7 +84,7 @@ Call ${TAILOR_TOOL_NAME} with:
   Write it the way a strong resume bullet is written, not like a bio: lead with the single most relevant, most impressive true fact first — don't bury it in the middle or end. Use confident, active-voice verbs (Built, Shipped, Led, Reduced, Architected, Engineered) — never passive filler ("was responsible for", "helped with", "involved in"). If the profile already states a real number (a percentage, a user count, a time saved), keep it in the sentence, don't paraphrase it away into something vaguer. Cut generic claims a summary could make about anyone ("hardworking", "passionate about technology", "team player") — every sentence should say something only true of this specific person's actual background.
 - matchedSkills: at most 18 skill names that exist in the profile's real skills list, ordered by relevance to this job (most relevant first). This is a one-page resume's skills section, not a full skills inventory — if more than 18 real skills genuinely match, cut down to the 18 most relevant to THIS job rather than listing everything. The rest stay true of the person, they just don't need to appear on this particular tailored resume.
 - missingSkills: skill names the job description or required-skills text asks for that are NOT in the profile's skills list.
-- suggestedProjects: project names from the profile's real projects list, ordered by relevance to this job (most relevant first).
+- suggestedProjects: at most 2 project names from the profile's real projects list, most relevant to this job first — a featured-projects section, not a full project list.
 - estimatedMatchScore: a conservative 0-100 estimate for this exact job after applying your proposed summary, skill order, and project selection. Treat 90+ as a target, not a promise. Award 90+ only when the profile has direct evidence for every major required qualification and no known required-skill gaps. Never inflate the score to satisfy the user, and never imply that a score guarantees an interview or selection.
 - scoreRationale: up to five short reasons tied to specific profile evidence or JD requirements.
 - atsWarnings: up to six concrete remaining risks or gaps. Include missing required skills, unsupported preferred skills, seniority/experience mismatches, missing measurable outcomes, and incomplete profile fields when relevant. Return an empty list only when there are no material issues you can identify.
