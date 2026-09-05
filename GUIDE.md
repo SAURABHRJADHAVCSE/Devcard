@@ -381,6 +381,155 @@ audit above, before any of the other prompts — they all assume a populated pro
 > no more than five bullets. Do not edit Devcard, invent qualifications, or inflate percentages
 > to satisfy the requested count."
 
+**Auditing your job-platform profile page** *(a different thing from your resume — this is
+the profile page itself on Naukri/LinkedIn/etc., which recruiters search against directly;
+uses the Claude in Chrome extension — your real, logged-in session — since it has to read a
+page on a site you're actually logged into)*
+> "Open my profile page on [platform, e.g. Naukri] using the Claude in Chrome extension — the
+> one already logged into my account there. Audit it like a recruiter deciding whether to click
+> through to my full resume:
+> - Resume headline / profile title — specific and compelling, or generic or blank?
+> - Key skills / tags section — filled in, and does it actually match what's in my real Devcard
+>   profile (get_full_profile)? Flag any high-value skill that's genuinely in Devcard but
+>   missing from these tags.
+> - Profile summary / about section — filled in, or thin/blank?
+> - The platform's own completeness indicator (most show a % or checklist) — what's it flagging
+>   as missing?
+> - Resume upload — is a current one attached, and how recent?
+> - Anything else visible (photo, contact visibility, preferences) that would make a recruiter's
+>   search skip past this profile.
+>
+> Cross-check every claim against my real Devcard profile — never suggest adding something that
+> isn't true, and never claim a gap that Devcard actually covers. Give me: a completeness score
+> out of 100 with your reasoning, a prioritized list of exactly what to fill in or fix, and
+> copy-paste-ready text (headline, key skills list, summary) built only from real Devcard facts
+> that I can paste directly into the platform's edit fields. Don't submit or save anything on
+> the platform yourself — show me the text and let me paste it in."
+>
+> **ChatGPT version** *(same audit, via the ChatGPT desktop app's built-in browser and its own
+> separate signed-in profile on the platform — not the cloud/Agent-mode browser, which can't
+> reach a logged-in session at all; sign into the platform there once first if you haven't)*:
+> "Open my profile page on [platform, e.g. Naukri] using ChatGPT's built-in browser, signed into
+> my account there. Also open http://localhost:6366 to read my real Devcard Knowledge base as
+> the source of truth. Audit the platform profile like a recruiter deciding whether to click
+> through to my full resume:
+> - Resume headline / profile title — specific and compelling, or generic or blank?
+> - Key skills / tags section — filled in, and does it actually match what's in Devcard? Flag
+>   any high-value skill that's genuinely in Devcard but missing from these tags.
+> - Profile summary / about section — filled in, or thin/blank?
+> - The platform's own completeness indicator — what's it flagging as missing?
+> - Resume upload — is a current one attached, and how recent?
+> - Anything else visible that would make a recruiter's search skip past this profile.
+>
+> Cross-check every claim against Devcard — never suggest adding something that isn't true, and
+> never claim a gap that Devcard actually covers. Give me: a completeness score out of 100 with
+> your reasoning, a prioritized list of exactly what to fill in or fix, and copy-paste-ready
+> text (headline, key skills list, summary) built only from real Devcard facts. Don't submit or
+> save anything on the platform yourself — show me the text and let me paste it in."
+
+**Updating your job-platform profile page** *(the write version of the audit above — after one
+approval, it actually edits the fields on the platform itself via the Claude in Chrome
+extension, instead of just handing you text to paste in. A public, recruiter-facing profile is
+worth a review step before it's overwritten, so this always shows you the exact before → after
+changes and waits for approval, even with standing permission for that platform)*
+> "Open my profile page on [platform, e.g. Naukri] using the Claude in Chrome extension — the
+> one already logged into my account there. Compare every editable field (resume headline, key
+> skills / tags, summary / about section, and anything else on the page) against my real Devcard
+> profile (get_full_profile) and current resume. For each field that's missing, outdated, or
+> weaker than what Devcard actually supports, work out the corrected text — built only from real
+> Devcard facts, never invented or exaggerated.
+>
+> Show me one summary of exactly what you'd change, as Field: current → proposed, for every
+> field involved. Wait for my approval before touching anything.
+>
+> Once I approve, update those fields on the platform itself, one at a time, then read the page
+> back afterward to confirm each one actually saved — never claim something was updated without
+> verifying it's genuinely visible on the page. Give me a final table: Field | Old value | New
+> value | Confirmed saved (yes/no)."
+>
+> **ChatGPT version** *(same compare-then-update flow, via the ChatGPT desktop app's built-in
+> browser and its own separate signed-in profile on the platform — not the cloud/Agent-mode
+> browser, which can't reach a logged-in session at all; sign into the platform there once first
+> if you haven't)*:
+> "Open my profile page on [platform, e.g. Naukri] using ChatGPT's built-in browser, signed into
+> my account there. Also open http://localhost:6366 to read my real Devcard Knowledge base and
+> current resume as the source of truth. Compare every editable field on the platform profile
+> (resume headline, key skills / tags, summary / about section, and anything else on the page)
+> against Devcard. For each field that's missing, outdated, or weaker than what Devcard actually
+> supports, work out the corrected text — built only from real Devcard facts, never invented.
+>
+> Show me one summary of exactly what you'd change, as Field: current → proposed, for every
+> field involved. Wait for my approval before touching anything.
+>
+> Once I approve, update those fields on the platform itself, one at a time, then read the page
+> back afterward to confirm each one actually saved — never claim something was updated without
+> verifying it's genuinely visible on the page. Give me a final table: Field | Old value | New
+> value | Confirmed saved (yes/no)."
+
+**Verifying and improving an existing Naukri profile — ChatGPT only** *(a complete health check
+that compares the live Naukri profile, Devcard, and the current resume, then applies only approved
+changes through connected Chrome)*
+> "Audit and improve my existing Naukri profile end to end.
+>
+> Use ChatGPT's built-in browser to open my local Devcard dashboard at http://localhost:6366.
+> Read the complete Knowledge base in Markdown view and inspect my current polished resume. Use
+> my connected Chrome profile to open my signed-in Naukri profile in both recruiter-visible and
+> edit views. Devcard is the source of truth for my professional facts; Naukri is the profile
+> being checked.
+>
+> Goal: make my Naukri profile complete, current, internally consistent, search-friendly, and
+> fully supported by my real experience — without inventing anything.
+>
+> Audit before editing. Compare all visible and editable areas, including:
+> - resume headline and target role positioning;
+> - key skills/tags, their relevance, ordering, spelling, duplicates, and truthful gaps;
+> - profile summary, employment history, job titles, companies, dates, responsibilities, and
+>   achievements;
+> - projects, education, certifications, links, locations, preferred roles, notice period, and
+>   other recruiter filters;
+> - the platform's completeness score/checklist, profile visibility, last-updated indicators,
+>   and missing sections;
+> - the uploaded resume's filename, age, and consistency with Devcard. If Naukri exposes the
+>   resume file, inspect it; otherwise do not assume its contents.
+>
+> Classify every difference as one of: outdated, missing, inconsistent, weak wording,
+> unsupported claim, duplicate, or optional improvement. When Devcard, the resume, and Naukri
+> conflict, do not guess which is correct. Show the conflict and ask me the smallest question
+> needed to resolve it. Do not infer salary, notice period, work authorization, location
+> preference, or other private/profile-preference data.
+>
+> Before changing anything, give me:
+> 1. a recruiter-readiness score out of 100 with the main reasons;
+> 2. a three-way comparison table: Field | Current Naukri | Devcard/current resume | Issue |
+>    Proposed value | Priority;
+> 3. copy-ready proposed text for every field that should change;
+> 4. a separate list of confirmed facts that should first be added to Devcard or regenerated in
+>    the resume;
+> 5. the expected improvement from each high-priority change.
+>
+> Pause for my approval after presenting that review. Ask all essential factual questions
+> together. Do not modify Naukri, Devcard, privacy settings, preferences, or the uploaded resume
+> before approval.
+>
+> After I approve:
+> - If Devcard is missing a fact I explicitly confirmed, update it through Devcard's Chat update
+>   tab and verify it in Knowledge base first.
+> - If the resume needs approved factual updates, regenerate the polished resume and inspect its
+>   preview.
+> - Update the approved Naukri fields through connected Chrome, one field at a time. Preserve
+>   any field I did not approve.
+> - Pause again immediately before uploading/replacing a resume file or changing visibility,
+>   contact, salary, notice-period, or job-preference settings.
+> - Save each approved edit, reread the page, and verify the value is visibly persisted. Never
+>   claim an update succeeded from a click alone.
+>
+> Finish with:
+> Field | Old value | New value | Source of truth | Confirmed saved (yes/no)
+>
+> Also report the final visible completeness score, remaining gaps, whether the uploaded resume
+> is current, and any blocker requiring me. Do not apply to jobs or contact recruiters as part
+> of this task."
+
 **Finding, prepping, and applying to fresh jobs** *(searches each platform's own search
 directly by default; falls back to an Apify job-search tool for a broader internet-wide crawl
 when not confined to one portal; applies for you via the Claude in Chrome extension — your
