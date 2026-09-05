@@ -106,3 +106,25 @@ export interface TailorResult {
   missingSkills: string[];
   suggestedProjects: string[];
 }
+
+export interface JobPlatform {
+  id: string;
+  name: string;
+  baseUrl: string;
+  addedAt: string | null;
+}
+
+export type ApplicationStatus = "applied" | "interviewing" | "rejected" | "offer";
+
+export interface Application {
+  id: string;
+  company: string;
+  role: string;
+  platform: string | null;
+  jobUrl: string | null;
+  resumeVersionId: string | null;
+  status: ApplicationStatus;
+  notes: string | null;
+  appliedAt: string | null;
+  updatedAt: string | null;
+}

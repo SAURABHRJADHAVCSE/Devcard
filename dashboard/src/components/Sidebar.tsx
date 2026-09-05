@@ -1,17 +1,18 @@
-import { User, MessageSquare, FileStack, Sparkles, BookOpen, Sun, Moon } from "lucide-react";
+import { User, MessageSquare, FileStack, Sparkles, Send, BookOpen, Sun, Moon } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "cn";
 import { useTheme } from "@/lib/theme";
 
-export type Page = "profile" | "chat" | "resumes" | "tailor" | "guide";
+export type Page = "profile" | "chat" | "resumes" | "tailor" | "applications" | "guide";
 
 const NAV: { page: Page; label: string; icon: LucideIcon }[] = [
   { page: "profile", label: "Knowledge base", icon: User },
   { page: "chat", label: "Chat update", icon: MessageSquare },
   { page: "resumes", label: "Resumes", icon: FileStack },
   { page: "tailor", label: "Tailor", icon: Sparkles },
+  { page: "applications", label: "Applications", icon: Send },
   { page: "guide", label: "Guide", icon: BookOpen },
 ];
 

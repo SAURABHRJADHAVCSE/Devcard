@@ -4,6 +4,7 @@ import { ProfilePage } from "@/pages/ProfilePage";
 import { ChatPage } from "@/pages/ChatPage";
 import { ResumesPage } from "@/pages/ResumesPage";
 import { TailorPage } from "@/pages/TailorPage";
+import { ApplicationsPage } from "@/pages/ApplicationsPage";
 import { GuidePage } from "@/pages/GuidePage";
 
 const PAGES: Record<Page, { title: string; subtitle: string; component: React.ComponentType }> = {
@@ -26,6 +27,11 @@ const PAGES: Record<Page, { title: string; subtitle: string; component: React.Co
     title: "Tailor",
     subtitle: "Paste a job description, get an honest tailored resume version — saved and reusable.",
     component: TailorPage,
+  },
+  applications: {
+    title: "Applications",
+    subtitle: "Job platforms you use, and every application you've actually submitted.",
+    component: ApplicationsPage,
   },
   guide: {
     title: "Guide",

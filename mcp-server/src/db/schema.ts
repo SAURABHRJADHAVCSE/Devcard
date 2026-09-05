@@ -94,6 +94,39 @@ export const resumeVersions = sqliteTable("resume_versions", {
   updatedAt: integer("updated_at", { mode: "timestamp" }).$onUpdateFn(() => new Date()),
 });
 
+// Job sites the user actually uses (e.g. LinkedIn, Naukri) — lets Claude
+// know which platforms to search without being told every time, and lets
+// recordApplication auto-label an application's platform from its jobUrl
+// (see db/job-platforms.ts:detectPlatform) instead of the caller having to
+// name it. baseUrl is stored as a bare hostname ("linkedin.com"), not a
+// full URL — normalizeHost() handles stripping scheme/path on the way in
+// so a pasted full URL still lands here clean.
+export const jobPlatforms = sqliteTable("job_platforms", {
+  id: text("id").primaryKey().$defaultFn(() => createId()),
+  name: text("name").notNull(), // "LinkedIn", "Naukri"
+  baseUrl: text("base_url").notNull(),
+  addedAt: integer("added_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+// One row per job application actually submitted — separate from
+// resumeVersions (a resumeVersion is prepared, possibly for a role you never
+// apply to; an application is a record that you did). resumeVersionId is a
+// loose reference (no FK constraint) to whichever tailored version was used,
+// if any — deliberately not enforced so deleting an old resume version never
+// blocks or cascades into losing an application record.
+export const applications = sqliteTable("applications", {
+  id: text("id").primaryKey().$defaultFn(() => createId()),
+  company: text("company").notNull(),
+  role: text("role").notNull(),
+  platform: text("platform"), // resolved label, e.g. "LinkedIn" — null if not detected/given
+  jobUrl: text("job_url"),
+  resumeVersionId: text("resume_version_id"),
+  status: text("status").notNull().default("applied"), // "applied" | "interviewing" | "rejected" | "offer"
+  notes: text("notes"),
+  appliedAt: integer("applied_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).$onUpdateFn(() => new Date()),
+});
+
 // Every update to the knowledge base is logged here first, then applied —
 // this is the audit trail that lets us see what an AI parse actually changed.
 export const knowledgeEvents = sqliteTable("knowledge_events", {

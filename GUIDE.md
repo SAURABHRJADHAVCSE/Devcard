@@ -45,8 +45,9 @@ I keep a personal knowledge base called Devcard, reachable through its MCP tools
 remove_skill, remove_experience, remove_project, remove_education, remove_certification,
 search_profile, get_full_profile, get_resume_text, get_resume_pdf, list_resume_templates,
 tailor_resume, save_resume_version, list_resume_versions, get_resume_version,
-remove_resume_version). Treat it as the standing source of truth for my skills, work
-history, and projects.
+remove_resume_version, add_job_platform, remove_job_platform, list_job_platforms,
+record_application, list_applications, update_application, remove_application). Treat it
+as the standing source of truth for my skills, work history, projects, and job applications.
 
 Whenever I mention something that belongs there — I learned a technology, shipped or
 started a project, changed roles, finished a course, earned a certification — call the
@@ -79,6 +80,11 @@ Rules:
 - If I give you a job description, use tailor_resume, then show me its missingSkills before
   including any of them — never add a skill I haven't confirmed I actually have, and never
   add it to the real knowledge base even after I confirm, only to that resume version.
+- Before searching for jobs, call list_job_platforms so you know which sites I actually use
+  instead of asking me every time.
+- Only call record_application for a job I actually submitted an application to — never for
+  one I'm just considering or a resume I merely tailored. If you're not sure I actually
+  applied, ask first.
 ```
 
 ---
@@ -132,6 +138,38 @@ without it — these work as one-off requests too):
 > grounded in my actual profile, and make the summary and skill ordering as compelling and
 > relevant to this role as the real facts allow — the strongest honest version of my resume
 > for this job, not a generic one."
+
+**Getting an honest resume audit** *(no job description needed — a general quality critique)*
+> "Act as an expert recruiter reviewing my resume. Pull my full profile with get_full_profile
+> (or get_resume_text), then tell me honestly: why might a recruiter reject this? Which
+> important skills or achievements are underrepresented or missing entirely? Which parts should
+> be emphasized more, and which are weak filler that should be cut? Be specific and critical —
+> I'd rather hear it now than after 50 rejections."
+
+**Finding roles you're a strong match for** *(no job description needed — analyzes your whole profile)*
+> "Act as an expert technical recruiter. Pull my full profile with get_full_profile, then
+> identify 10 specific job titles where I'm an 80%+ match with the highest realistic chance of
+> landing an interview — target industry/location: [fill in]. For each, give me: Job Title |
+> Estimated Match % | Why I'm a Strong Fit | Top 3 Missing Keywords to Add | Where to Search.
+> Base every claim on what's actually in my profile — no inflating my fit to hit round numbers."
+
+**Finding and prepping fresh jobs with Apify** *(needs an Apify job-search tool connected in
+this session — this workflow ends at "resume ready," it doesn't submit anything itself)*
+> "Call list_job_platforms first, and search those sites (add any with add_job_platform if I
+> mention a new one). Search for fresh [job title(s)] openings posted in the last [N] days
+> using the Apify job tool. For each posting, pull its JD text and cross-check it against my
+> Devcard profile (get_full_profile) — rank them by how strong a match I am. For anything
+> that's a strong match, run tailor_resume against that JD: if it flags a required skill I
+> don't have, ask me before including it, same rule as always — never assume I have something I
+> haven't told you about. Save the good ones with save_resume_version named '<Company> —
+> <Role>' and generate the PDF with get_resume_pdf. When you're done, give me one table: Job
+> Title | Company | Match % | Why | Resume Version Saved | PDF link. I'll handle actually
+> submitting each one myself (or via Claude for Chrome) — your job is just finding them and
+> getting a truthful, tailored resume ready for each."
+
+**Logging an application you just submitted** *(after you actually apply, via Claude for Chrome or by hand)*
+> "I just applied to [Role] at [Company] on [platform/URL]. Log it with record_application,
+> and link it to the '<Company> — <Role>' resume version if I saved one for it."
 
 **Cleanup**
 > "Remove jQuery from my skills, I don't use it anymore"
@@ -253,6 +291,14 @@ standalone app window (own taskbar icon, no browser chrome).
   `remove_resume_version`, and `get_resume_pdf` accepts a `versionId` to render a saved one.
 - **Chat update tab** — a natural-language update flow, full-size, with visible history of
   what each message changed.
+- **Applications tab** — two things: the job platforms you actually use (name + base URL —
+  tells Claude which sites to search, and auto-labels an application's platform from its
+  posting URL when they match), and a table of every job you've actually applied to (company,
+  role, platform, date, status, linked resume PDF if one was tailored for it). Add a platform
+  or record an application right from the tab, or let Claude do both via `add_job_platform` /
+  `list_job_platforms` / `record_application` / `list_applications` / `update_application` (see
+  the cheat sheet's Apify and "logging an application" prompts) — same underlying data either
+  way.
 - **Light/dark toggle** — bottom-left of the sidebar.
 
 ---
@@ -304,4 +350,6 @@ own to lean on.
 | `get_resume_pdf` / `list_resume_templates` | The actual PDF file (base64), and which templates exist. `get_resume_pdf` takes an optional `versionId`, and always also returns a direct `http://localhost:6366/api/pdf?...` download link as text — some MCP clients (Claude Desktop, as of now) don't surface the base64 file itself in chat, so the link is the reliable way to actually get the PDF |
 | `tailor_resume` | Analyzes a JD against the real profile; proposes summary/matchedSkills/missingSkills/suggestedProjects — saves nothing |
 | `save_resume_version` / `list_resume_versions` / `get_resume_version` / `remove_resume_version` | Save, list, inspect, and delete named tailored resume versions |
+| `add_job_platform` / `list_job_platforms` / `remove_job_platform` | Job sites you actually use (name + base URL) — check before a job search instead of asking every time |
+| `record_application` / `list_applications` / `update_application` / `remove_application` | Log a job you actually applied to (auto-labels platform from `jobUrl` when it matches a registered one), list them, update status/notes, or delete one |
 | `search_profile` | Keyword search across skills/experience/projects |

@@ -13,8 +13,9 @@ const STANDING_INSTRUCTION = `I keep a personal knowledge base called Devcard, r
 remove_skill, remove_experience, remove_project, remove_education, remove_certification,
 search_profile, get_full_profile, get_resume_text, get_resume_pdf, list_resume_templates,
 tailor_resume, save_resume_version, list_resume_versions, get_resume_version,
-remove_resume_version). Treat it as the standing source of truth for my skills, work
-history, and projects.
+remove_resume_version, add_job_platform, remove_job_platform, list_job_platforms,
+record_application, list_applications, update_application, remove_application). Treat it
+as the standing source of truth for my skills, work history, projects, and job applications.
 
 Whenever I mention something that belongs there — I learned a technology, shipped or
 started a project, changed roles, finished a course, earned a certification — call the
@@ -46,7 +47,12 @@ Rules:
   itself directly in chat.
 - If I give you a job description, use tailor_resume, then show me its missingSkills before
   including any of them — never add a skill I haven't confirmed I actually have, and never
-  add it to the real knowledge base even after I confirm, only to that resume version.`;
+  add it to the real knowledge base even after I confirm, only to that resume version.
+- Before searching for jobs, call list_job_platforms so you know which sites I actually use
+  instead of asking me every time.
+- Only call record_application for a job I actually submitted an application to — never for
+  one I'm just considering or a resume I merely tailored. If you're not sure I actually
+  applied, ask first.`;
 
 interface Prompt {
   text: string;
@@ -115,6 +121,42 @@ const CHEAT_SHEET: { title: string; prompts: Prompt[] }[] = [
 
 Tailor my Devcard resume to this exact role. Use tailor_resume to analyze it against my real profile, then show me the tailored summary and matched skills. If it flags any required skills I don't have listed, ask me before including any of them on the resume — never assume I have something I haven't told you about. Once I confirm, save it with save_resume_version using a clear name like '<Company> — <Role>', then hand me the PDF with get_resume_pdf. Optimize for a high ATS match score against this JD, keep every claim 100% truthful and grounded in my actual profile, and make the summary and skill ordering as compelling and relevant to this role as the real facts allow — the strongest honest version of my resume for this job, not a generic one.`,
         note: "Works the same from Claude Code, Claude Desktop, or any other MCP-connected tool",
+      },
+    ],
+  },
+  {
+    title: "Getting an honest resume audit",
+    prompts: [
+      {
+        text: `Act as an expert recruiter reviewing my resume. Pull my full profile with get_full_profile (or get_resume_text), then tell me honestly: why might a recruiter reject this? Which important skills or achievements are underrepresented or missing entirely? Which parts should be emphasized more, and which are weak filler that should be cut? Be specific and critical — I'd rather hear it now than after 50 rejections.`,
+        note: "No job description needed — a general quality critique",
+      },
+    ],
+  },
+  {
+    title: "Finding roles you're a strong match for",
+    prompts: [
+      {
+        text: `Act as an expert technical recruiter. Pull my full profile with get_full_profile, then identify 10 specific job titles where I'm an 80%+ match with the highest realistic chance of landing an interview — target industry/location: [fill in]. For each, give me: Job Title | Estimated Match % | Why I'm a Strong Fit | Top 3 Missing Keywords to Add | Where to Search. Base every claim on what's actually in my profile — no inflating my fit to hit round numbers.`,
+        note: "No job description needed — analyzes your whole profile",
+      },
+    ],
+  },
+  {
+    title: "Finding and prepping fresh jobs with Apify",
+    prompts: [
+      {
+        text: `Call list_job_platforms first, and search those sites (add any with add_job_platform if I mention a new one). Search for fresh [job title(s)] openings posted in the last [N] days using the Apify job tool. For each posting, pull its JD text and cross-check it against my Devcard profile (get_full_profile) — rank them by how strong a match I am. For anything that's a strong match, run tailor_resume against that JD: if it flags a required skill I don't have, ask me before including it, same rule as always — never assume I have something I haven't told you about. Save the good ones with save_resume_version named '<Company> — <Role>' and generate the PDF with get_resume_pdf. When you're done, give me one table: Job Title | Company | Match % | Why | Resume Version Saved | PDF link. I'll handle actually submitting each one myself (or via Claude for Chrome) — your job is just finding them and getting a truthful, tailored resume ready for each.`,
+        note: "Needs an Apify job-search tool connected in this session — ends at \"resume ready,\" doesn't submit anything itself",
+      },
+    ],
+  },
+  {
+    title: "Logging an application you just submitted",
+    prompts: [
+      {
+        text: `I just applied to [Role] at [Company] on [platform/URL]. Log it with record_application, and link it to the '<Company> — <Role>' resume version if I saved one for it.`,
+        note: "After you actually apply, via Claude for Chrome or by hand",
       },
     ],
   },

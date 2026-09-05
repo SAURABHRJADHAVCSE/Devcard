@@ -7,6 +7,8 @@ import { registerEducationTools } from "./tools/education";
 import { registerCertificationTools } from "./tools/certifications";
 import { registerPdfTools } from "./tools/pdf";
 import { registerResumeVersionTools } from "./tools/resume-versions";
+import { registerJobPlatformTools } from "./tools/job-platforms";
+import { registerApplicationTools } from "./tools/applications";
 import { registerChatTools } from "./tools/chat";
 import { registerProfileResources } from "./resources/profile";
 import { registerResumeResource } from "./resources/resume";
@@ -22,6 +24,8 @@ export function createMcpServer() {
   registerCertificationTools(server);
   registerPdfTools(server);
   registerResumeVersionTools(server);
+  registerJobPlatformTools(server);
+  registerApplicationTools(server);
   registerChatTools(server);
   registerProfileResources(server);
   registerResumeResource(server);

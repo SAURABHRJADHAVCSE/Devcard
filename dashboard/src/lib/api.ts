@@ -1,4 +1,4 @@
-import type { FullProfile, ResumeVersion, TailorResult } from "./types";
+import type { FullProfile, ResumeVersion, TailorResult, JobPlatform, Application, ApplicationStatus } from "./types";
 
 // Served same-origin by the MCP server (see mcp-server/src/api/router.ts).
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -64,3 +64,41 @@ export const saveResumeVersion = (input: SaveResumeVersionInput) =>
   });
 
 export const deleteResumeVersion = (id: string) => request<ResumeVersion>(`/api/resume-versions/${id}`, { method: "DELETE" });
+
+export const listJobPlatforms = () => request<JobPlatform[]>("/api/job-platforms");
+
+export const addJobPlatform = (name: string, baseUrl: string) =>
+  request<JobPlatform>("/api/job-platforms", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, baseUrl }),
+  });
+
+export const deleteJobPlatform = (id: string) => request<JobPlatform>(`/api/job-platforms/${id}`, { method: "DELETE" });
+
+export const listApplications = () => request<Application[]>("/api/applications");
+
+export interface RecordApplicationInput {
+  company: string;
+  role: string;
+  platform?: string;
+  jobUrl?: string;
+  resumeVersionId?: string;
+  notes?: string;
+}
+
+export const recordApplication = (input: RecordApplicationInput) =>
+  request<Application>("/api/applications", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+
+export const updateApplication = (id: string, patch: { status?: ApplicationStatus; notes?: string }) =>
+  request<Application>(`/api/applications/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(patch),
+  });
+
+export const deleteApplication = (id: string) => request<Application>(`/api/applications/${id}`, { method: "DELETE" });

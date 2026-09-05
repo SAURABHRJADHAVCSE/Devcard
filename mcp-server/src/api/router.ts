@@ -7,6 +7,8 @@ import { chatRouter } from "./chat";
 import { resumeRouter } from "./resume";
 import { pdfRouter } from "./pdf";
 import { resumeVersionsRouter } from "./resume-versions";
+import { jobPlatformsRouter } from "./job-platforms";
+import { applicationsRouter } from "./applications";
 
 export const app = new Hono();
 
@@ -24,6 +26,8 @@ app.route("/api/chat", chatRouter);
 app.route("/api/resume", resumeRouter);
 app.route("/api/pdf", pdfRouter);
 app.route("/api/resume-versions", resumeVersionsRouter);
+app.route("/api/job-platforms", jobPlatformsRouter);
+app.route("/api/applications", applicationsRouter);
 
 // Resolved from this file's own location, not process.cwd() — an MCP
 // client (Claude Desktop/Code) can spawn this process from an unpredictable
