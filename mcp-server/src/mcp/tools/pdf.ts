@@ -32,7 +32,7 @@ export function registerPdfTools(server: McpServer) {
     {
       title: "Get resume PDF",
       description:
-        "Renders a profile as a PDF resume and returns the actual file (base64-encoded). With no versionId, renders the live profile as-is — edit the profile first (add_skill, update_experience, etc.) then call this again to see changes. With a versionId (from save_resume_version/list_resume_versions), renders that tailored version instead.",
+        "Renders a profile as a single-column, selectable-text, ATS-readable PDF and returns the actual file (base64-encoded). With no versionId, renders the live profile as-is — edit the profile first (add_skill, update_experience, etc.) then call this again to see changes. With a versionId (from save_resume_version/list_resume_versions), renders that tailored version instead. ATS compatibility improves parsing but cannot guarantee a score, interview, or selection.",
       inputSchema: {
         template: z
           .string()

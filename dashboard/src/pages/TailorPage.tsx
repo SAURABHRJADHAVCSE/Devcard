@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Sparkles, Download, Trash2, ChevronRight, ShieldAlert } from "lucide-react";
+import { Sparkles, Download, Trash2, ChevronRight, ShieldAlert, CheckCircle2 } from "lucide-react";
 import {
   tailorResume,
   listResumeVersions,
@@ -144,6 +144,52 @@ function TailorForm({ onSaved }: { onSaved: (version: ResumeVersion) => void }) 
 
         {result && (
           <div className="space-y-4 border-t border-border pt-4">
+            <div className="rounded-xl border border-border bg-muted/30 p-4">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm font-semibold">Estimated ATS match</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">Conservative estimate for this job, not an interview guarantee.</p>
+                </div>
+                <span
+                  className={`text-2xl font-bold ${
+                    result.estimatedMatchScore >= 90
+                      ? "text-emerald-600 dark:text-emerald-400"
+                      : result.estimatedMatchScore >= 75
+                        ? "text-amber-600 dark:text-amber-400"
+                        : "text-destructive"
+                  }`}
+                >
+                  {result.estimatedMatchScore}%
+                </span>
+              </div>
+              <div className="mt-3 h-2 overflow-hidden rounded-full bg-border/70">
+                <div
+                  className={`h-full rounded-full ${result.estimatedMatchScore >= 90 ? "bg-emerald-500" : result.estimatedMatchScore >= 75 ? "bg-amber-500" : "bg-destructive"}`}
+                  style={{ width: `${result.estimatedMatchScore}%` }}
+                />
+              </div>
+              {result.scoreRationale.length > 0 && (
+                <div className="mt-3 space-y-1.5">
+                  {result.scoreRationale.map((reason) => (
+                    <p key={reason} className="flex items-start gap-2 text-xs leading-relaxed text-foreground/80">
+                      <CheckCircle2 size={13} className="mt-0.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                      {reason}
+                    </p>
+                  ))}
+                </div>
+              )}
+              {result.atsWarnings.length > 0 && (
+                <div className="mt-3 border-t border-border pt-3">
+                  {result.atsWarnings.map((warning) => (
+                    <p key={warning} className="flex items-start gap-2 text-xs leading-relaxed text-amber-700 dark:text-amber-300">
+                      <ShieldAlert size={13} className="mt-0.5 shrink-0" />
+                      {warning}
+                    </p>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <div>
               <label className="mb-1.5 block text-sm font-medium">Tailored summary</label>
               <Textarea value={editedSummary} onChange={(e) => setEditedSummary(e.target.value)} rows={4} />

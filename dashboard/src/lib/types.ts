@@ -105,6 +105,9 @@ export interface TailorResult {
   matchedSkills: string[];
   missingSkills: string[];
   suggestedProjects: string[];
+  estimatedMatchScore: number;
+  scoreRationale: string[];
+  atsWarnings: string[];
 }
 
 export interface JobPlatform {

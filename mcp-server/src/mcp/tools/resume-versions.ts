@@ -10,7 +10,7 @@ export function registerResumeVersionTools(server: McpServer) {
     {
       title: "Tailor resume to a job description",
       description:
-        "Analyzes a job description against the real profile and proposes a tailored summary, matched skills, and featured projects — all built from real profile data, never invented. Also reports any skills the JD wants that aren't in the profile yet (missingSkills): before including any of those on the resume, ask the user which ones to add — they go onto this resume only, never into the real knowledge base. This does NOT save anything — call save_resume_version with the final, user-approved fields afterward.",
+        "Analyzes a job description against the real profile and proposes an ATS-optimized summary, ordered matched skills, and relevant projects — all built from real profile data, never invented. Returns a conservative estimatedMatchScore, evidence-based scoreRationale, atsWarnings, and any JD skills missing from the profile. A 90+ estimate is a target only when the evidence supports it; it never guarantees an interview or selection. Ask before including missing skills. This does NOT save anything — call save_resume_version with the final, user-approved fields afterward.",
       inputSchema: {
         jobDescription: z.string().describe("The pasted job description text"),
         requiredSkills: z.string().optional().describe("Optional separate list of required skills, if not already clear from the JD"),
@@ -27,7 +27,7 @@ export function registerResumeVersionTools(server: McpServer) {
     {
       title: "Save a tailored resume version",
       description:
-        "Saves a named, reusable resume version (e.g. \"Google — Senior SWE, Jan 2026\"). Typically called after tailor_resume, with its summary/matchedSkills/suggestedProjects (plus any missingSkills the user approved adding, merged into skillNames) as the fields here. skillNames/projectNames are the FULL list to show, in order — not a diff. Omitted fields fall back to whatever the live profile currently says.",
+        "Saves a named, reusable resume version (e.g. \"Google — Senior SWE, Jan 2026\"). Typically called after tailor_resume, with its summary/matchedSkills/suggestedProjects (plus only missingSkills the user explicitly confirmed as true, merged into skillNames). skillNames/projectNames are the FULL list to show, in relevance order — not a diff. Omitted fields fall back to the live profile. The default polished template is single-column, selectable-text, and ATS-readable.",
       inputSchema: {
         name: z.string().describe('A short label, e.g. "Google — Senior SWE, Jan 2026"'),
         jobDescription: z.string().optional(),

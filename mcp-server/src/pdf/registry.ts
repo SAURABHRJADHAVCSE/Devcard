@@ -29,8 +29,8 @@ export const PDF_TEMPLATES: PdfTemplate[] = [
   {
     id: "polished",
     name: "Polished",
-    description: "Centered header, blue accents, and bold-emphasized bullets.",
-    atsFriendly: false,
+    description: "Refined single-column layout with a structured header, navy accents, and ATS-readable typography.",
+    atsFriendly: true,
     render: (full, density) => PolishedResume({ full, density }),
   },
 ];

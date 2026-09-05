@@ -60,8 +60,40 @@ Rules:
 - If I give you a job description, use tailor_resume, then show me its missingSkills before
   including any of them — never add a skill I haven't confirmed I actually have, and never
   add it to the real knowledge base even after I confirm, only to that resume version.
+- For every job-specific resume, optimize for ATS parsing and recruiter readability using exact
+  JD terminology only where my profile supports the claim. Treat an estimated 90+ match as a
+  target, never a guarantee: show me the score rationale and remaining warnings, and do not
+  inflate the number or imply that any resume guarantees an interview or selection.
+- Render the final version with the polished template so the PDF stays single-column, readable,
+  and selectable. Never use keyword stuffing, hidden text, graphics, tables, or unsupported claims.
 - If you're not sure whether I actually applied to something, ask before calling
   record_application — never log an application on a guess.`;
+
+// STANDING_INSTRUCTION's source is manually wrapped at ~95 chars/line for
+// readability in the code — rendering that raw with `white-space: pre-wrap`
+// would turn every source line break into a hard line break in the UI
+// (narrow, ragged column with dead space beside it) instead of letting the
+// browser reflow to fill the card. This joins wrapped continuation lines
+// back into one line per paragraph/bullet, while still preserving genuine
+// breaks: blank lines (paragraph boundaries) and lines starting a new
+// bullet ("- "). Only affects display — the raw constant (with its
+// original line breaks) is still what the Copy button copies, which is
+// harmless since line-wrap position doesn't matter to Claude reading it.
+function formatForDisplay(text: string): string {
+  const lines = text.split("\n");
+  return lines
+    .reduce<string[]>((out, line) => {
+      const prev = out[out.length - 1];
+      const startsNewBlock = line.trim() === "" || line.trim().startsWith("- ") || prev === undefined || prev.trim() === "";
+      if (startsNewBlock) {
+        out.push(line);
+      } else {
+        out[out.length - 1] = `${prev} ${line.trim()}`;
+      }
+      return out;
+    }, [])
+    .join("\n");
+}
 
 interface Prompt {
   text: string;
@@ -116,7 +148,9 @@ const CHEAT_SHEET: { title: string; prompts: Prompt[] }[] = [
     title: "Exporting",
     prompts: [
       { text: "Give me my resume as markdown" },
-      { text: "Give me my resume as a PDF" },
+      {
+        text: "Generate my resume as a polished ATS-readable PDF. Keep it single-column and selectable, use standard section headings, and include only facts already stored in my Devcard profile. Give me the download link.",
+      },
       { text: "Format my Devcard profile as a two-paragraph bio for a LinkedIn summary" },
     ],
   },
@@ -128,7 +162,13 @@ const CHEAT_SHEET: { title: string; prompts: Prompt[] }[] = [
 
 [paste the JD]
 
-Tailor my Devcard resume to this exact role. Use tailor_resume to analyze it against my real profile, then show me the tailored summary and matched skills. If it flags any required skills I don't have listed, ask me before including any of them on the resume — never assume I have something I haven't told you about. Once I confirm, save it with save_resume_version using a clear name like '<Company> — <Role>', then hand me the PDF with get_resume_pdf. Optimize for a high ATS match score against this JD, keep every claim 100% truthful and grounded in my actual profile, and make the summary and skill ordering as compelling and relevant to this role as the real facts allow — the strongest honest version of my resume for this job, not a generic one.`,
+Create the strongest truthful ATS-ready version of my Devcard resume for this exact role:
+1. Call tailor_resume with the full JD and my real profile.
+2. Show me the proposed summary, ordered matched skills, featured projects, estimatedMatchScore, scoreRationale, atsWarnings, and missingSkills before saving anything.
+3. Target an estimated match of 90+ only when my stored evidence genuinely supports every major requirement. Use exact JD terminology where truthful, preserve real metrics, prioritize required qualifications, and remove generic filler. Never keyword-stuff or invent experience, skills, dates, credentials, or results.
+4. If missingSkills contains anything I may actually know, ask me to confirm it. Do not add an unconfirmed skill and do not inflate the score to reach 90. If the truthful estimate remains below 90, explain the specific gaps instead of claiming success.
+5. After I approve, save the complete ordered skill and project lists with save_resume_version using '<Company> - <Role>', then call get_resume_pdf for that version with the polished template and give me the download link.
+6. Confirm that the result is a single-column, selectable-text PDF with standard headings. Do not claim that an ATS score guarantees an interview or selection; optimize the factors we can control and report the remaining risks honestly.`,
         note: "Works the same from Claude Code, Claude Desktop, or any other MCP-connected tool",
       },
     ],
@@ -158,9 +198,9 @@ Tailor my Devcard resume to this exact role. Use tailor_resume to analyze it aga
         text: `Find and prepare fresh job applications for me, step by step:
 1. Call list_job_platforms and search those sites (register a new one with add_job_platform if I mention one that isn't there yet).
 2. Search for fresh [job title(s)] openings posted in the last [N] days, using the Apify job tool.
-3. For each posting, pull its JD text and cross-check it against my Devcard profile (get_full_profile) — rank them by how strong a match I am.
-4. For anything that's a strong match: run tailor_resume against that JD (if it flags a required skill I don't have, ask me before including it — never assume I have something I haven't told you about), then save_resume_version named '<Company> — <Role>' and generate the PDF with get_resume_pdf.
-5. Give me one final table: Job Title | Company | Match % | Why | Resume Version Saved | PDF link.
+3. For each posting, pull its JD text and cross-check it against my Devcard profile (get_full_profile). Rank roles by a conservative estimated match and prioritize roles where my truthful profile can credibly reach 90+ after tailoring.
+4. For each strong match, run tailor_resume and show estimatedMatchScore, scoreRationale, atsWarnings, and missingSkills. Ask before including any missing skill and never inflate a score. Then save_resume_version named '<Company> - <Role>' and generate the polished PDF with get_resume_pdf.
+5. Give me one final table: Job Title | Company | Estimated Match | Evidence | Remaining Gaps | Resume Version | PDF link. Never imply that a score guarantees an interview.
 I'll handle the actual submitting myself, or via Claude for Chrome — your job stops at 'resume ready.'`,
         note: "Needs an Apify job-search tool connected in this session — ends at \"resume ready,\" doesn't submit anything itself",
       },
@@ -249,7 +289,7 @@ export function GuidePage() {
         <Card>
           <CardContent>
             <pre className="font-sans text-[0.83rem] leading-relaxed whitespace-pre-wrap text-foreground/90">
-              {STANDING_INSTRUCTION}
+              {formatForDisplay(STANDING_INSTRUCTION)}
             </pre>
           </CardContent>
         </Card>

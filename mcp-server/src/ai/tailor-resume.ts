@@ -14,6 +14,28 @@ import { getFullProfile } from "../db/get-full-profile";
 // own "at most 18" instruction. Skills past the cap are still real and still
 // true of the person; they just don't get featured on this one-page resume.
 const MAX_MATCHED_SKILLS = 18;
+const MAX_SUMMARY_LENGTH = 500;
+
+function uniqueNonEmpty(values: string[]): string[] {
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const value of values) {
+    const trimmed = value.trim();
+    const key = trimmed.toLowerCase();
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    result.push(trimmed);
+  }
+  return result;
+}
+
+function limitSummary(summary: string): string {
+  const clean = summary.trim();
+  if (clean.length <= MAX_SUMMARY_LENGTH) return clean;
+  const shortened = clean.slice(0, MAX_SUMMARY_LENGTH - 1);
+  const lastSpace = shortened.lastIndexOf(" ");
+  return `${shortened.slice(0, lastSpace > 420 ? lastSpace : shortened.length).replace(/[,:;\s]+$/, "")}.`;
+}
 
 // Analysis only — never writes to the database. matchedSkills/
 // suggestedProjects/missingSkills are a *proposal*; nothing is saved as a
@@ -44,20 +66,43 @@ export async function tailorResume(jobDescription: string, requiredSkills?: stri
   // ever being saved onto a resume — rather than presented as already true.
   // Real projects that don't match get dropped rather than demoted: there's
   // no "missing project" concept to approve into, unlike skills.
-  const realSkillNames = new Set(profile.skills.map((s) => s.name.toLowerCase()));
-  const realProjectNames = new Set(profile.projects.map((p) => p.name.toLowerCase()));
+  const realSkillNames = new Map(profile.skills.map((s) => [s.name.toLowerCase(), s.name]));
+  const realProjectNames = new Map(profile.projects.map((p) => [p.name.toLowerCase(), p.name]));
 
   const matchedSkills: string[] = [];
-  const missingSkills = [...parsed.data.missingSkills];
+  const missingSkills = uniqueNonEmpty(parsed.data.missingSkills).filter((name) => !realSkillNames.has(name.toLowerCase()));
   for (const name of parsed.data.matchedSkills) {
-    if (realSkillNames.has(name.toLowerCase())) {
-      matchedSkills.push(name);
+    const canonicalName = realSkillNames.get(name.toLowerCase());
+    if (canonicalName) {
+      matchedSkills.push(canonicalName);
     } else if (!missingSkills.some((m) => m.toLowerCase() === name.toLowerCase())) {
-      missingSkills.push(name);
+      missingSkills.push(name.trim());
     }
   }
 
-  const suggestedProjects = parsed.data.suggestedProjects.filter((name) => realProjectNames.has(name.toLowerCase()));
+  const suggestedProjects = uniqueNonEmpty(parsed.data.suggestedProjects)
+    .map((name) => realProjectNames.get(name.toLowerCase()))
+    .filter((name): name is string => Boolean(name));
 
-  return { summary: parsed.data.summary, matchedSkills: matchedSkills.slice(0, MAX_MATCHED_SKILLS), missingSkills, suggestedProjects };
+  // A 90+ estimate is not credible while the JD still contains known skill
+  // gaps. This server-side ceiling prevents any provider from inflating the
+  // score merely because the caller asked for a particular number.
+  const gapScoreCeiling = missingSkills.length === 0 ? 100 : missingSkills.length <= 2 ? 89 : missingSkills.length <= 4 ? 84 : 79;
+  const estimatedMatchScore = Math.min(parsed.data.estimatedMatchScore, gapScoreCeiling);
+  const atsWarnings = uniqueNonEmpty(parsed.data.atsWarnings);
+  if (estimatedMatchScore < parsed.data.estimatedMatchScore) {
+    atsWarnings.unshift(
+      `Estimated score capped at ${gapScoreCeiling} because ${missingSkills.length} JD skill gap${missingSkills.length === 1 ? " remains" : "s remain"}.`,
+    );
+  }
+
+  return {
+    summary: limitSummary(parsed.data.summary),
+    matchedSkills: uniqueNonEmpty(matchedSkills).slice(0, MAX_MATCHED_SKILLS),
+    missingSkills,
+    suggestedProjects,
+    estimatedMatchScore,
+    scoreRationale: uniqueNonEmpty(parsed.data.scoreRationale).slice(0, 5),
+    atsWarnings: atsWarnings.slice(0, 6),
+  };
 }

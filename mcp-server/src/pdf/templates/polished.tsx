@@ -1,7 +1,7 @@
 import { Fragment } from "react";
 import { Document, Page, View, Text, Link } from "@react-pdf/renderer";
 import type { FullProfile } from "../../db/get-full-profile";
-import { parseJsonArray, SKILL_CATEGORY_LABELS, dateRange, normalizeUrl } from "../format";
+import { parseJsonArray, SKILL_CATEGORY_LABELS, dateRange, formatResumeDate, normalizeUrl } from "../format";
 import {
   useSharedStyles,
   resolveBoldStyle,
@@ -49,6 +49,11 @@ export function PolishedResume({ full, density = "comfortable" }: { full: FullPr
 
   const contactParts = [p?.email, p?.phone, p?.location].filter((v): v is string => Boolean(v));
   const linkUrls = [p?.website, p?.github, p?.linkedin].filter((v): v is string => Boolean(v));
+  const contactRows =
+    contactParts.join(" | ").length > 76 && contactParts.length > 1
+      ? [contactParts.slice(0, 1), contactParts.slice(1)]
+      : [contactParts];
+  const linkRows = linkUrls.join(" | ").length > 100 ? linkUrls.map((url) => [url]) : [linkUrls];
 
   // Projects are already resolved by the caller before this template ever
   // sees them — featured-only by default, or a saved version's explicit
@@ -82,34 +87,57 @@ export function PolishedResume({ full, density = "comfortable" }: { full: FullPr
       subject="Resume"
     >
       <Page size="A4" style={styles.page}>
-        <View style={{ alignItems: "center" }}>
+        <View
+          style={{
+            alignItems: "center",
+            borderTopWidth: 3,
+            borderTopColor: POLISHED_THEME.accent,
+            paddingTop: 11,
+          }}
+        >
           <Text style={[styles.name, { textAlign: "center" }]}>{p?.name || "Untitled Profile"}</Text>
           {p?.headline && (
             <Text style={[styles.headline, { textAlign: "center", color: POLISHED_THEME.accent, ...boldStyle }]}>
               {p.headline}
             </Text>
           )}
-          {(contactParts.length > 0 || linkUrls.length > 0) && (
-            // One line for everything (contact facts + links) per standard
-            // convention — was two lines earlier; links stay real
-            // hyperlinks in accent color, inline with the plain facts.
-            <Text style={[styles.contactLine, { textAlign: "center" }]}>
-              {contactParts.map((part, i) => (
-                <Fragment key={`fact-${part}`}>
-                  {i > 0 && "   ·   "}
-                  {part}
-                </Fragment>
-              ))}
-              {contactParts.length > 0 && linkUrls.length > 0 && "   ·   "}
-              {linkUrls.map((url, i) => (
-                <Fragment key={url}>
-                  {i > 0 && "   ·   "}
-                  <Link src={normalizeUrl(url)} style={{ color: POLISHED_THEME.accent, textDecoration: "none" }}>
-                    {url}
-                  </Link>
-                </Fragment>
-              ))}
-            </Text>
+          {contactRows.map((row, rowIndex) =>
+            row.length > 0 ? (
+              <Text
+                key={`contact-${rowIndex}`}
+                style={[
+                  styles.contactLine,
+                  { textAlign: "center", marginBottom: rowIndex < contactRows.length - 1 || linkUrls.length > 0 ? 2.5 : undefined },
+                ]}
+              >
+                {row.map((part, i) => (
+                  <Fragment key={`fact-${part}`}>
+                    {i > 0 && "  |  "}
+                    {part}
+                  </Fragment>
+                ))}
+              </Text>
+            ) : null,
+          )}
+          {linkRows.map((row, rowIndex) =>
+            row.length > 0 ? (
+              <Text
+                key={`links-${rowIndex}`}
+                style={[
+                  styles.contactLine,
+                  { textAlign: "center", marginBottom: rowIndex < linkRows.length - 1 ? 2.5 : undefined },
+                ]}
+              >
+                {row.map((url, i) => (
+                  <Fragment key={url}>
+                    {i > 0 && "  |  "}
+                    <Link src={normalizeUrl(url)} style={{ color: POLISHED_THEME.accent, textDecoration: "none" }}>
+                      {url.replace(/^https?:\/\//i, "").replace(/\/$/, "")}
+                    </Link>
+                  </Fragment>
+                ))}
+              </Text>
+            ) : null,
           )}
         </View>
 
@@ -136,10 +164,10 @@ export function PolishedResume({ full, density = "comfortable" }: { full: FullPr
           <View>
             <SectionHeader styles={styles}>Work Experience</SectionHeader>
             {experiences.map((e) => {
-              const meta = [e.location, dateRange(e.startDate, e.endDate, e.isCurrent)].filter(Boolean).join("   ·   ");
+              const meta = [e.location, dateRange(e.startDate, e.endDate, e.isCurrent)].filter(Boolean).join("  |  ");
               return (
                 <View key={e.id} style={styles.entry} wrap={false}>
-                  <EntryHeading title={`${e.role} — ${e.company}`} meta={meta} styles={styles} />
+                  <EntryHeading title={`${e.role} - ${e.company}`} meta={meta} styles={styles} />
                   <InlineBoldBulletList text={e.description} styles={styles} boldStyle={boldStyle} />
                   <TechLine tech={parseJsonArray(e.techUsed)} styles={styles} />
                 </View>
@@ -154,7 +182,7 @@ export function PolishedResume({ full, density = "comfortable" }: { full: FullPr
             {projects.map((proj) => {
               const title = proj.url ? (
                 <>
-                  {proj.name}{" "}
+                  {proj.name}{"  |  "}
                   <Link src={normalizeUrl(proj.url)} style={{ color: POLISHED_THEME.accent, textDecoration: "none" }}>
                     {proj.url}
                   </Link>
@@ -179,8 +207,10 @@ export function PolishedResume({ full, density = "comfortable" }: { full: FullPr
             {(() => {
               const ed = latestEducation;
               const degreeLine = [ed.degree, ed.field].filter(Boolean).join(" in ") || ed.institution;
-              const years = [ed.startYear, ed.endYear].filter(Boolean).join(" – ");
-              const meta = [degreeLine !== ed.institution ? ed.institution : null, years].filter(Boolean).join("   ·   ");
+              const years = [ed.startYear, ed.endYear].filter(Boolean).join(" - ");
+              const institution = degreeLine !== ed.institution ? ed.institution : "";
+              const metaParts = [institution, years].filter(Boolean);
+              const meta = metaParts.join(" | ").length > 78 ? metaParts.join("\n") : metaParts.join("  |  ");
               return (
                 <View key={ed.id} style={styles.entry} wrap={false}>
                   <EntryHeading title={degreeLine} meta={meta} styles={styles} />
@@ -196,8 +226,8 @@ export function PolishedResume({ full, density = "comfortable" }: { full: FullPr
             {certifications.map((c) => (
               <Text key={c.id} style={styles.skillLine}>
                 {c.name}
-                {c.issuer ? ` — ${c.issuer}` : ""}
-                {c.issuedDate ? ` (${c.issuedDate}${c.expiresDate ? ` – ${c.expiresDate}` : ""})` : ""}
+                {c.issuer ? ` - ${c.issuer}` : ""}
+                {c.issuedDate ? ` | ${formatResumeDate(c.issuedDate)}${c.expiresDate ? ` - ${formatResumeDate(c.expiresDate)}` : ""}` : ""}
               </Text>
             ))}
           </View>

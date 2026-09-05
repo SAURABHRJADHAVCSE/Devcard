@@ -71,7 +71,7 @@ async function main() {
 
       check(result.pageCount >= 1, `renders (${result.pageCount} page${result.pageCount === 1 ? "" : "s"}, density=${result.density})`);
       if (!result.fitOnePage) {
-        console.log(`  ⚠ did not fit one page even at veryCompact — content genuinely exceeds one page`);
+        console.log(`  ⚠ did not fit one page even at ultraCompact — content genuinely exceeds one page`);
       }
 
       // Watermark / branding check

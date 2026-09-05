@@ -92,6 +92,12 @@ Rules:
 - If I give you a job description, use tailor_resume, then show me its missingSkills before
   including any of them — never add a skill I haven't confirmed I actually have, and never
   add it to the real knowledge base even after I confirm, only to that resume version.
+- For every job-specific resume, optimize for ATS parsing and recruiter readability using exact
+  JD terminology only where my profile supports the claim. Treat an estimated 90+ match as a
+  target, never a guarantee: show me the score rationale and remaining warnings, and do not
+  inflate the number or imply that any resume guarantees an interview or selection.
+- Render the final version with the polished template so the PDF stays single-column, readable,
+  and selectable. Never use keyword stuffing, hidden text, graphics, tables, or unsupported claims.
 - If you're not sure whether I actually applied to something, ask before calling
   record_application — never log an application on a guess.
 ```
@@ -131,7 +137,9 @@ replace it with your own details before sending; everything else is literal.
 
 **Exporting**
 > "Give me my resume as markdown"
-> "Give me my resume as a PDF"
+> "Generate my resume as a polished ATS-readable PDF. Keep it single-column and selectable,
+> use standard section headings, and include only facts already stored in my Devcard profile.
+> Give me the download link."
 > "Format my Devcard profile as a two-paragraph bio for a LinkedIn summary"
 
 **Tailoring a resume to a job** *(works the same from Claude Code, Claude Desktop, or any other MCP-connected tool)*
@@ -139,15 +147,23 @@ replace it with your own details before sending; everything else is literal.
 >
 > [paste the JD]
 >
-> Tailor my Devcard resume to this exact role. Use tailor_resume to analyze it against my real
-> profile, then show me the tailored summary and matched skills. If it flags any required
-> skills I don't have listed, ask me before including any of them on the resume — never assume
-> I have something I haven't told you about. Once I confirm, save it with save_resume_version
-> using a clear name like '<Company> — <Role>', then hand me the PDF with get_resume_pdf.
-> Optimize for a high ATS match score against this JD, keep every claim 100% truthful and
-> grounded in my actual profile, and make the summary and skill ordering as compelling and
-> relevant to this role as the real facts allow — the strongest honest version of my resume
-> for this job, not a generic one."
+> Create the strongest truthful ATS-ready version of my Devcard resume for this exact role:
+> 1. Call tailor_resume with the full JD and my real profile.
+> 2. Show me the proposed summary, ordered matched skills, featured projects,
+>    estimatedMatchScore, scoreRationale, atsWarnings, and missingSkills before saving anything.
+> 3. Target an estimated match of 90+ only when my stored evidence genuinely supports every
+>    major requirement. Use exact JD terminology where truthful, preserve real metrics,
+>    prioritize required qualifications, and remove generic filler. Never keyword-stuff or
+>    invent experience, skills, dates, credentials, or results.
+> 4. If missingSkills contains anything I may actually know, ask me to confirm it. Do not add
+>    an unconfirmed skill and do not inflate the score to reach 90. If the truthful estimate
+>    remains below 90, explain the specific gaps instead of claiming success.
+> 5. After I approve, save the complete ordered skill and project lists with
+>    save_resume_version using '<Company> - <Role>', then call get_resume_pdf for that version
+>    with the polished template and give me the download link.
+> 6. Confirm that the result is a single-column, selectable-text PDF with standard headings.
+>    Do not claim that an ATS score guarantees an interview or selection; optimize the factors
+>    we can control and report the remaining risks honestly."
 
 **Getting an honest resume audit** *(no job description needed — a general quality critique)*
 > "Act as an expert recruiter reviewing my resume. Pull my full profile with get_full_profile
@@ -171,13 +187,14 @@ this session — this workflow ends at "resume ready," it doesn't submit anythin
 > 2. Search for fresh [job title(s)] openings posted in the last [N] days, using the Apify job
 >    tool.
 > 3. For each posting, pull its JD text and cross-check it against my Devcard profile
->    (get_full_profile) — rank them by how strong a match I am.
-> 4. For anything that's a strong match: run tailor_resume against that JD (if it flags a
->    required skill I don't have, ask me before including it — never assume I have something I
->    haven't told you about), then save_resume_version named '<Company> — <Role>' and generate
->    the PDF with get_resume_pdf.
-> 5. Give me one final table: Job Title | Company | Match % | Why | Resume Version Saved | PDF
->    link.
+>    (get_full_profile). Rank roles by a conservative estimated match and prioritize roles
+>    where my truthful profile can credibly reach 90+ after tailoring.
+> 4. For each strong match, run tailor_resume and show estimatedMatchScore, scoreRationale,
+>    atsWarnings, and missingSkills. Ask before including any missing skill and never inflate
+>    a score. Then save_resume_version named '<Company> - <Role>' and generate the polished
+>    PDF with get_resume_pdf.
+> 5. Give me one final table: Job Title | Company | Estimated Match | Evidence | Remaining
+>    Gaps | Resume Version | PDF link. Never imply that a score guarantees an interview.
 > I'll handle the actual submitting myself, or via Claude for Chrome — your job stops at
 > 'resume ready.'"
 
@@ -230,7 +247,7 @@ standalone app window (own taskbar icon, no browser chrome).
   - **Polished** (default) — centered header, Inter typeface, dark-navy accents (`#1a2e4a`),
     colored section rules (no underline on the real hyperlinks — an earlier default-underline
     rendering artifact was removed), standard section headings ("Professional Summary", "Work
-    Experience"), single-line contact info (facts + real hyperlinked links together), and
+    Experience"), structured contact and link rows, and
     technical skills placed right after the summary — ahead of experience, per standard
     developer-resume guidance. Website/GitHub/LinkedIn links and project URLs render as real
     clickable PDF hyperlinks, not just colored text. Also the only template that renders
@@ -238,9 +255,10 @@ standalone app window (own taskbar icon, no browser chrome).
     this**` in a description to have specific phrases stand out). Title/dates stay stacked
     rather than right-aligned on one line — a right-aligned row was tried and measured (see
     `primitives.tsx:EntryHeading`): it looks fine on screen but corrupts ATS reading order, so
-    it was reverted. Downloads as `FirstName-LastName-Resume.pdf`. Not ATS-optimized overall
-    (relies on color for section headers, and Inter is embedded rather than a base-14 font —
-    see below).
+    it was reverted. Downloads as `FirstName-LastName-Resume.pdf`. The template is ATS-readable:
+    it uses a single column, real selectable text, standard headings, clean reading order, and
+    no tables, icons, text boxes, hidden keywords, or rasterized content. Styling cannot guarantee
+    an ATS score or shortlist; job-specific content fit still depends on the truthful profile data.
 
     **Content is curated, not just laid out**, to help real content actually fit one page:
     Education shows only your single highest/most recent entry (standard practice once you
@@ -340,10 +358,10 @@ own to lean on.
 | Endpoint | What it does |
 |---|---|
 | `GET /api/pdf/templates` | Lists available templates (id, name, description, whether it's ATS-friendly) |
-| `GET /api/pdf?template=ats` | Downloads the resume PDF using that template (`ats` is the default if omitted) |
-| `GET /api/pdf?template=ats&disposition=inline` | Same PDF, served for in-page viewing (used by the Resumes tab's preview) instead of triggering a download |
+| `GET /api/pdf?template=polished` | Downloads the ATS-readable resume PDF (`polished` is the default if omitted) |
+| `GET /api/pdf?template=polished&disposition=inline` | Same PDF, served for in-page viewing (used by the Resumes tab's preview) instead of triggering a download |
 | `GET /api/pdf?version=<id>` | Renders a saved, tailored resume version instead of the live profile as-is |
-| `POST /api/resume-versions/tailor` | `{jobDescription, requiredSkills?}` → AI analysis (summary/matchedSkills/missingSkills/suggestedProjects) — doesn't save anything |
+| `POST /api/resume-versions/tailor` | `{jobDescription, requiredSkills?}` → AI analysis (summary, ordered matches/projects, missing skills, conservative estimated score, rationale, warnings) — doesn't save anything |
 | `GET` / `POST` / `DELETE /api/resume-versions[/:id]` | List, save, and delete saved resume versions |
 
 ---

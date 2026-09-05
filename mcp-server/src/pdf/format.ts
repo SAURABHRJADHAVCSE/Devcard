@@ -16,10 +16,23 @@ export const SKILL_CATEGORY_LABELS: Record<string, string> = {
   soft: "Soft Skills",
 };
 
+export function formatResumeDate(value: string | null | undefined): string {
+  if (!value) return "";
+
+  const monthMatch = /^(\d{4})-(\d{2})(?:-\d{2})?$/.exec(value);
+  if (!monthMatch) return value;
+
+  const month = Number(monthMatch[2]);
+  if (month < 1 || month > 12) return value;
+
+  const monthName = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][month - 1];
+  return `${monthName} ${monthMatch[1]}`;
+}
+
 export function dateRange(start: string | null, end: string | null, isCurrent?: boolean | null): string {
-  const from = start ?? "";
-  const to = isCurrent ? "Present" : (end ?? "");
-  return [from, to].filter(Boolean).join(" – ");
+  const from = formatResumeDate(start);
+  const to = isCurrent ? "Present" : formatResumeDate(end);
+  return [from, to].filter(Boolean).join(" - ");
 }
 
 // Profile/project URLs are stored as the user typed them ("github.com/x",
