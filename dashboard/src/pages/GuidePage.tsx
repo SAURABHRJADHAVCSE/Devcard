@@ -212,7 +212,7 @@ After approval, save the version as '<Company> - <Role>', generate the polished 
 
 Job description:
 [paste the full JD]`,
-          note: "Outcome-first ChatGPT prompt — uses your live Devcard profile and verifies the final PDF",
+          note: "Outcome-first — uses your live Devcard profile and verifies the final PDF. Needs the ChatGPT desktop app's built-in browser specifically — the cloud/Agent-mode browser can't reach localhost:6366 at all.",
         },
       },
     ],
@@ -244,7 +244,7 @@ Return:
 - the three best-fit role families for the resume as it stands.
 
 Stop once the recommendations are specific enough for me to revise the resume; do not pad the response with generic resume advice.`,
-          note: "Deep recruiter audit grounded in both your Devcard content and rendered resume",
+          note: "Deep recruiter audit grounded in both your Devcard content and rendered resume. Needs the ChatGPT desktop app's built-in browser specifically — the cloud/Agent-mode browser can't reach localhost:6366 at all.",
         },
       },
     ],
@@ -268,7 +268,7 @@ Return one ranked table:
 Rank | Job title | Conservative fit % | Strongest evidence from Devcard | Main gap | Resume wording to surface | Where to search
 
 Include only roles you estimate at 70%+; return fewer than 10 if fewer genuinely qualify. After the table, recommend the top three titles to pursue first and explain the decision in no more than five bullets. Do not edit Devcard, invent qualifications, or inflate percentages to satisfy the requested count.`,
-          note: "Combines your live profile with current market evidence and conservative ranking",
+          note: "Combines your live profile with current market evidence and conservative ranking. Needs the ChatGPT desktop app's built-in browser specifically — the cloud/Agent-mode browser can't reach localhost:6366 at all.",
         },
       },
     ],
