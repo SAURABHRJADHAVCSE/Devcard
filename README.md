@@ -17,21 +17,28 @@ no account, no hosted service, no data leaving your computer except the AI calls
 
 ```bash
 git clone https://github.com/SAURABHRJADHAVCSE/Devcard.git
-cd Devcard/mcp-server
-bun install
-cp .env.example .env   # then fill in an API key — see mcp-server/README.md
-bun run db:migrate
-cd .. && bun run dev
+cd Devcard
+bun run setup
 ```
 
-Then open **http://localhost:6366** for the dashboard, or connect Claude (see below) and just
-start talking to it.
+One command installs both subprojects, creates a starter `.env`, and sets up the (empty)
+database — including automatically working around a known Windows/antivirus install hiccup (see
+below) if it hits it, so you shouldn't need to do anything else by hand. It ends by printing your
+two options:
 
-> **Windows note**: `bun install` can fail with an `EPERM ... moving "drizzle-kit" to cache dir`
-> error — a transient Windows/antivirus file lock, not a real problem with the project. Re-run
-> `bun install` a couple of times, and if it still fails specifically on `drizzle-kit`, run
-> `npm install --no-save -D drizzle-kit@1.0.0-rc.4` instead (see `mcp-server/README.md` for
-> details). This is common enough on a fresh Windows clone that it's worth expecting.
+1. **Connect Claude Desktop / Claude Code** — no API key needed for this path at all:
+   ```bash
+   claude mcp add devcard -- bun mcp-server/src/index.ts
+   ```
+   Then just talk to Claude normally — see [`GUIDE.md`](./GUIDE.md) for prompt examples.
+2. **The dashboard** — `bun run dev`, then open **http://localhost:6366**. This needs an API key
+   in `mcp-server/.env` (see the comments in that file), but only for its own natural-language
+   chat box — everything else works without one.
+
+> **Windows note**: a fresh `bun install` can hit an `EPERM ... moving "drizzle-kit" to cache
+> dir` error — a transient Windows/antivirus file lock, not a real problem with the project.
+> `bun run setup` already retries and works around this automatically; you'd only see it directly
+> if running `bun install` by hand instead.
 
 ## Parts
 
