@@ -87,14 +87,7 @@ export function PolishedResume({ full, density = "comfortable" }: { full: FullPr
       subject="Resume"
     >
       <Page size="A4" style={styles.page}>
-        <View
-          style={{
-            alignItems: "center",
-            borderTopWidth: 3,
-            borderTopColor: POLISHED_THEME.accent,
-            paddingTop: 11,
-          }}
-        >
+        <View style={{ alignItems: "center" }}>
           <Text style={[styles.name, { textAlign: "center" }]}>{p?.name || "Untitled Profile"}</Text>
           {p?.headline && (
             <Text style={[styles.headline, { textAlign: "center", color: POLISHED_THEME.accent, ...boldStyle }]}>
