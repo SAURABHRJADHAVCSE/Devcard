@@ -165,6 +165,37 @@ replace it with your own details before sending; everything else is literal.
 > 6. Confirm that the result is a single-column, selectable-text PDF with standard headings.
 >    Do not claim that an ATS score guarantees an interview or selection; optimize the factors
 >    we can control and report the remaining risks honestly."
+>
+> **ChatGPT version** *(outcome-first — uses your live Devcard profile and verifies the final PDF)*:
+> "Create the strongest truthful, one-page ATS resume I can submit for the job below.
+>
+> Use ChatGPT's built-in browser to open http://localhost:6366 and treat my Devcard Knowledge
+> base as the only source of truth about me. Use the Tailor tab to analyze the full job
+> description. You may reorder, tighten, and rephrase supported content, but do not invent or
+> exaggerate any skill, responsibility, metric, date, credential, or result.
+>
+> Success means:
+> - the opening summary leads with my strongest evidence for this role and stays under 500
+>   characters;
+> - the skills list contains at most 18 truthful, role-relevant skills in priority order;
+> - JD terminology is used only where Devcard supports it;
+> - the best supported projects and experience are emphasized, generic filler is removed, and
+>   the PDF remains a readable single-column page;
+> - the honest score, rationale, ATS warnings, and unresolved gaps are reported without
+>   implying an interview guarantee.
+>
+> Before saving, give me one compact review containing: proposed summary, matched skills,
+> featured projects, estimated match, score rationale, ATS warnings, and missing skills. If a
+> missing skill could materially improve the resume, ask only whether I genuinely have that
+> skill; leave it off unless I confirm it. If no clarification is needed, ask for one approval
+> to save.
+>
+> After approval, save the version as '<Company> - <Role>', generate the polished PDF, inspect
+> the final preview for overflow or obvious layout problems, and give me the exact saved
+> version and PDF filename or download.
+>
+> Job description:
+> [paste the full JD]"
 
 **Getting an honest resume audit** *(no job description needed — a general quality critique)*
 > "Act as an expert recruiter reviewing my resume. Pull my full profile with get_full_profile
@@ -172,6 +203,36 @@ replace it with your own details before sending; everything else is literal.
 > important skills or achievements are underrepresented or missing entirely? Which parts should
 > be emphasized more, and which are weak filler that should be cut? Be specific and critical —
 > I'd rather hear it now than after 50 rejections."
+>
+> **ChatGPT version** *(deep recruiter audit grounded in your content and rendered resume)*:
+> "Audit my current resume like a skeptical senior technical recruiter deciding whether to
+> interview me.
+>
+> Use ChatGPT's built-in browser to open http://localhost:6366. Read the complete Knowledge
+> base in Markdown view and inspect the polished resume preview. Treat Devcard as the source of
+> truth. Do not edit or save anything.
+>
+> Diagnose the resume, not me. Separate problems into:
+> 1. evidence or achievements that exist but are buried or weakly written;
+> 2. important information genuinely absent from Devcard;
+> 3. irrelevant filler, repetition, vague claims, and ATS/readability risks;
+> 4. positioning problems — the roles this resume appears suited for versus the roles it is
+>    unlikely to win.
+>
+> For every criticism, point to the specific resume section or wording that caused it and
+> propose a concrete correction that remains truthful. Do not recommend adding keywords or
+> metrics unless the underlying fact is already supported; label questions I should answer
+> separately.
+>
+> Return:
+> - a blunt 5-line recruiter verdict;
+> - a prioritized table: Severity | Problem | Evidence | Exact fix;
+> - the five highest-impact rewrites, shown as Before → After;
+> - missing facts I should supply, as short questions;
+> - the three best-fit role families for the resume as it stands.
+>
+> Stop once the recommendations are specific enough for me to revise the resume; do not pad
+> the response with generic resume advice."
 
 **Finding roles you're a strong match for** *(no job description needed — analyzes your whole profile)*
 > "Act as an expert technical recruiter. Pull my full profile with get_full_profile, then
@@ -179,6 +240,28 @@ replace it with your own details before sending; everything else is literal.
 > landing an interview — target industry/location: [fill in]. For each, give me: Job Title |
 > Estimated Match % | Why I'm a Strong Fit | Top 3 Missing Keywords to Add | Where to Search.
 > Base every claim on what's actually in my profile — no inflating my fit to hit round numbers."
+>
+> **ChatGPT version** *(combines your live profile with current market evidence)*:
+> "Find the 10 job titles that give me the best realistic chance of landing interviews in
+> [target industry/location].
+>
+> Use ChatGPT's built-in browser to open http://localhost:6366 and read my full Devcard
+> Knowledge base in Markdown view. Then use current web and job-market evidence to validate
+> that the titles are actually used and hiring in my target market. Base candidate-fit claims
+> only on Devcard; cite or link the market evidence you use.
+>
+> Rank titles by realistic interview probability, not prestige. Distinguish between:
+> - wording absent from my resume even though Devcard supports the underlying capability;
+> - a genuine skill or experience gap that I must not claim.
+>
+> Return one ranked table:
+> Rank | Job title | Conservative fit % | Strongest evidence from Devcard | Main gap | Resume
+> wording to surface | Where to search
+>
+> Include only roles you estimate at 70%+; return fewer than 10 if fewer genuinely qualify.
+> After the table, recommend the top three titles to pursue first and explain the decision in
+> no more than five bullets. Do not edit Devcard, invent qualifications, or inflate percentages
+> to satisfy the requested count."
 
 **Finding, prepping, and applying to fresh jobs** *(searches each platform's own search
 directly by default; falls back to an Apify job-search tool for a broader internet-wide crawl
@@ -217,6 +300,50 @@ hands you the tailored PDFs to apply yourself)*
 >    to its resume version. Give me one final table: Job Title | Company | Estimated Match |
 >    Resume Version | Applied (yes/no) | PDF link. Never imply that a score guarantees an
 >    interview."
+>
+> **ChatGPT version** *(full ChatGPT Work workflow with shortlist and pre-submission checkpoints)*:
+> "Find, qualify, tailor, and apply to the strongest fresh [job title(s)] openings posted
+> within the last [N] days.
+>
+> Use ChatGPT's built-in browser for my local Devcard dashboard at http://localhost:6366. Use
+> my connected Chrome profile for registered job portals and application forms. Devcard is the
+> only source of truth about my background; live job pages are the source of truth for role
+> requirements and application status.
+>
+> Success means:
+> - every candidate is a live, recent posting with company, role, location, posting date, and
+>   URL verified;
+> - anything already recorded in Devcard with the same URL or company + role is skipped before
+>   tailoring;
+> - only strong, truthful matches move forward, and weak matches are rejected with a brief
+>   reason;
+> - each approved role gets its own Devcard resume version and polished PDF;
+> - an application is marked submitted only after the site visibly confirms it, then it is
+>   recorded in Devcard.
+>
+> Work in stages:
+> 1. Read my Devcard profile, registered platforms, and application history. Search the
+>    registered platforms and build a shortlist ranked by conservative fit.
+> 2. Show me one decision table: Role | Company | Location | Posted | Fit | Evidence | Gaps |
+>    Recommendation | URL. Ask me to choose which roles to continue with; do not tailor or
+>    apply before this checkpoint.
+> 3. For each approved role, run the full JD through Devcard's Tailor tab. Keep the summary
+>    under 500 characters and matched skills at 18 or fewer. Show missing skills and ask only
+>    about ones that materially affect fit. Never enable one without my confirmation. Save
+>    '<Company> - <Role>', generate the polished PDF, and verify the preview.
+> 4. Prepare the application in connected Chrome using only verified Devcard facts and the
+>    exact role-specific PDF. Pause immediately before each final submission and whenever a
+>    CAPTCHA, login issue, ambiguous question, missing fact, consent, or sensitive field
+>    requires me. Never guess.
+> 5. After visible submission confirmation, record the application in Devcard with the correct
+>    URL and resume version.
+>
+> Final output:
+> Job Title | Company | Verified fit | Resume version | Applied (yes/no) | Evidence of
+> submission | Blocker/next action
+>
+> If a required browser or site is unavailable, complete every earlier stage that is still
+> possible, state the precise blocker, and hand me the prepared PDF and URL."
 
 **Daily job hunt — Naukri, Hirist, Wellfound** *(a ready-to-fire, fixed-scope version of the
 prompt above — no brackets to fill in, run it as-is)*
@@ -233,10 +360,65 @@ prompt above — no brackets to fill in, run it as-is)*
 > through. Log every submitted application with record_application, then give me the final
 > table: Job Title | Company | Platform | Estimated Match | Applied (yes/no) | PDF link. Also
 > tell me how many postings you skipped as already-applied."
+>
+> **ChatGPT version** *(high-signal daily hunt optimized for quality and verification)*:
+> "Run today's focused job hunt across Naukri, Hirist, and Wellfound using my connected Chrome
+> profile and my local Devcard dashboard at http://localhost:6366.
+>
+> Goal: find up to 10 fresh postings per platform, then advance only the strongest truthful
+> matches instead of forcing a quota.
+>
+> Use Devcard as the only source of truth about my background. Read my profile and application
+> history first. Verify each posting is live and capture its company, title, location, posting
+> age, URL, and essential requirements. Skip duplicates already recorded by URL or company +
+> role.
+>
+> Screen all verified postings conservatively. Return fewer results when quality is low. Before
+> tailoring anything, show the top shortlist in this format:
+> Rank | Role | Company | Platform | Posted | Fit | Strongest evidence | Critical gap | URL
+>
+> Recommend which roles deserve an application and pause for my approval. For approved roles,
+> use Devcard's Tailor tab with the full JD. Keep each summary under 500 characters and matched
+> skills at 18 or fewer. Show missing skills separately and never include one without my
+> confirmation. Save a '<Company> - <Role>' version, generate the polished PDF, and verify the
+> preview.
+>
+> Prepare each application in connected Chrome with only verified facts and the exact matching
+> PDF. Pause before final submission and for any CAPTCHA, login issue, ambiguous question,
+> missing fact, consent, or sensitive field. Count an application only when the site visibly
+> confirms submission; then record it in Devcard.
+>
+> Finish with:
+> - searched, invalid/stale, duplicate, weak-match, shortlisted, and submitted counts;
+> - Job Title | Company | Platform | Verified fit | Applied | Resume version | Blocker/next
+>   action.
+>
+> If a site blocks access, continue with the others and report the exact blocker instead of
+> fabricating results or stopping the whole run."
 
 **Logging an application you just submitted** *(after you actually apply, via Claude for Chrome or by hand)*
 > "I just applied to [Role] at [Company] on [platform/URL]. Log it with record_application,
 > and link it to the '<Company> — <Role>' resume version if I saved one for it."
+>
+> **ChatGPT version** *(duplicate-safe and verifies the saved row)*:
+> "Record this submitted application accurately in Devcard:
+>
+> - Role: [Role]
+> - Company: [Company]
+> - Job URL/platform: [platform or URL]
+> - Application date: [date, or use today]
+> - Status: Applied
+> - Notes: [optional]
+>
+> Use ChatGPT's built-in browser to open http://localhost:6366 and work in the Applications
+> tab. Check for an existing record with the same URL or company + role before creating
+> anything. Link the exact '<Company> - <Role>' resume version if one exists; if several
+> versions could match, ask me which one. Ask only for a required field that cannot be
+> determined from the information above.
+>
+> After saving, verify the new row in the Applications table and return: Company | Role |
+> Platform | Date | Status | Linked resume. Do not claim it was recorded unless the row is
+> visible."
 
 ---
 
