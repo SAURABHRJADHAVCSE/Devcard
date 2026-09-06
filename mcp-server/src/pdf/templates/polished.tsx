@@ -1,7 +1,7 @@
 import { Fragment } from "react";
 import { Document, Page, View, Text, Link } from "@react-pdf/renderer";
 import type { FullProfile } from "../../db/get-full-profile";
-import { parseJsonArray, SKILL_CATEGORY_LABELS, dateRange, formatResumeDate, normalizeUrl } from "../format";
+import { parseJsonArray, SKILL_CATEGORY_LABELS, SKILL_CATEGORY_ORDER, dateRange, formatResumeDate, normalizeUrl } from "../format";
 import {
   useSharedStyles,
   resolveBoldStyle,
@@ -144,7 +144,9 @@ export function PolishedResume({ full, density = "comfortable" }: { full: FullPr
         {skills.length > 0 && (
           <View>
             <SectionHeader styles={styles}>Skills</SectionHeader>
-            {[...byCategory.entries()].map(([category, names]) => (
+            {[...byCategory.entries()]
+              .sort(([a], [b]) => SKILL_CATEGORY_ORDER.indexOf(a) - SKILL_CATEGORY_ORDER.indexOf(b))
+              .map(([category, names]) => (
               <Text key={category} style={styles.skillLine}>
                 <Text style={styles.skillLabel}>{SKILL_CATEGORY_LABELS[category] ?? category}: </Text>
                 {names.join(", ")}

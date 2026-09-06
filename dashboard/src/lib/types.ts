@@ -16,7 +16,7 @@ export interface Profile {
   updatedAt: string | null;
 }
 
-export type SkillCategory = "language" | "framework" | "tool" | "cloud" | "soft";
+export type SkillCategory = "language" | "framework" | "tool" | "cloud" | "ai" | "soft";
 export type SkillLevel = "beginner" | "intermediate" | "advanced" | "expert";
 
 export interface Skill {

@@ -11,10 +11,19 @@ export function parseJsonArray(value: string | null): string[] {
 export const SKILL_CATEGORY_LABELS: Record<string, string> = {
   language: "Languages",
   framework: "Frameworks",
+  ai: "AI & LLM",
   tool: "Tools",
   cloud: "Cloud",
   soft: "Soft Skills",
 };
+
+// A resume's skills section groups by category (see templates/polished.tsx),
+// but without an explicit order the sections land in whatever order the
+// first skill of each category happened to be added in — an accident of
+// history, not a deliberate resume layout. This fixes a sensible, stable
+// reading order instead; any category not listed here (there shouldn't be
+// one, but defensively) sorts after everything listed.
+export const SKILL_CATEGORY_ORDER = ["language", "framework", "ai", "tool", "cloud", "soft"];
 
 export function formatResumeDate(value: string | null | undefined): string {
   if (!value) return "";

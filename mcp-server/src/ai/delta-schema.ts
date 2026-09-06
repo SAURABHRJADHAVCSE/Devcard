@@ -8,7 +8,7 @@ export const deltaSchema = z.object({
     .array(
       z.object({
         name: z.string(),
-        category: z.enum(["language", "framework", "tool", "cloud", "soft"]).default("tool"),
+        category: z.enum(["language", "framework", "tool", "cloud", "ai", "soft"]).default("tool"),
         level: z.enum(["beginner", "intermediate", "advanced", "expert"]).optional(),
         years: z.number().optional(),
       }),
@@ -138,7 +138,7 @@ export const deltaJsonSchema = {
         type: "object",
         properties: {
           name: { type: "string" },
-          category: { type: "string", enum: ["language", "framework", "tool", "cloud", "soft"] },
+          category: { type: "string", enum: ["language", "framework", "tool", "cloud", "ai", "soft"] },
           level: { type: "string", enum: ["beginner", "intermediate", "advanced", "expert"] },
           years: { type: "number" },
         },
@@ -274,7 +274,12 @@ export const DELTA_SYSTEM_PROMPT = `You convert a developer's casual, natural-la
 Rules:
 - Only include fields the message actually supports. Don't invent dates, tech, or details.
 - "I learned X" or "I've been using X" → addSkills (infer a reasonable category and level from
-  context). Check the profile's existing skills first: the server only blocks an exact
+  context). Use category "ai" for anything specifically about building with LLMs — model APIs
+  (OpenAI/Claude/Gemini/etc.), agent/orchestration frameworks, MCP, RAG, embeddings/vector
+  search, prompt engineering, or AI SDKs (Vercel AI SDK, LangChain, etc.) — these deserve their
+  own resume section rather than being buried in "tool" or "framework". A general-purpose tool
+  that merely supports AI work (Docker, Postgres) still stays in its normal category. Check the
+  profile's existing skills first: the server only blocks an exact
   case-insensitive name match, so if X is really the same skill already listed under a
   different name or abbreviation ("Express" when "Express.js" is already there, "OpenAI" when
   "OpenAI API" is already there), don't add a near-duplicate — omit it, since it's already

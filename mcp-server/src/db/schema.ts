@@ -20,7 +20,7 @@ export const profile = sqliteTable("profile", {
 export const skills = sqliteTable("skills", {
   id: text("id").primaryKey().$defaultFn(() => createId()),
   name: text("name").notNull(),
-  category: text("category").notNull(), // "language" | "framework" | "tool" | "cloud" | "soft"
+  category: text("category").notNull(), // "language" | "framework" | "tool" | "cloud" | "ai" | "soft"
   level: text("level"), // "beginner" | "intermediate" | "advanced" | "expert"
   yearsOfExperience: real("years_of_experience"),
   addedAt: integer("added_at", { mode: "timestamp" }).$defaultFn(() => new Date()),

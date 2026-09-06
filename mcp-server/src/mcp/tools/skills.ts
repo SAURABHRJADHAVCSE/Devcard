@@ -13,7 +13,7 @@ export function registerSkillTools(server: McpServer) {
       description: "Adds a skill to the profile directly, no AI parsing.",
       inputSchema: {
         name: z.string(),
-        category: z.enum(["language", "framework", "tool", "cloud", "soft"]).default("tool"),
+        category: z.enum(["language", "framework", "tool", "cloud", "ai", "soft"]).default("tool"),
         level: z.enum(["beginner", "intermediate", "advanced", "expert"]).optional(),
         years: z.number().optional(),
       },

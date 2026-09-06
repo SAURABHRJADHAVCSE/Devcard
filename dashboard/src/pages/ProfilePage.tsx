@@ -21,6 +21,7 @@ function parseJsonArray(value: string | null): string[] {
 const CATEGORY_LABELS: Record<string, string> = {
   language: "Languages",
   framework: "Frameworks",
+  ai: "AI & LLM",
   tool: "Tools",
   cloud: "Cloud",
   soft: "Soft skills",
