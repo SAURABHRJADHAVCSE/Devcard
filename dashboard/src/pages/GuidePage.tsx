@@ -438,6 +438,19 @@ If a required browser or site is unavailable, complete every earlier stage that 
     ],
   },
   {
+    title: "Broad internet-wide job search via Apify",
+    prompts: [
+      {
+        text: `Use the Apify job-search tool to crawl the wider internet for fresh [job title(s)] openings posted in the last [N] days — not limited to my registered platforms, cast a wide net (other job boards, aggregators, company career pages, whatever the tool covers). Check list_applications and skip anything (same company + role, or same URL) I've already applied to. Cross-check each remaining posting against my Devcard profile (get_full_profile) and give me a ranked table: Job Title | Company | Source/Platform | Posted | Estimated Match % | Why | URL. Don't tailor a resume or apply to anything yet — just find and list what's genuinely out there so I can pick which ones are worth pursuing.`,
+        note: "Search only, not tied to your registered platforms — casts a wide net across the open internet, then hands you a list to review. Doesn't tailor a resume or apply to anything itself.",
+        chatgpt: {
+          text: `Use the Apify job-search tool to crawl the wider internet for fresh [job title(s)] openings posted in the last [N] days — not limited to any one platform, cast a wide net (job boards, aggregators, company career pages, whatever the tool covers). Use ChatGPT's built-in browser to open http://localhost:6366 and read my Devcard profile and Applications tab as the source of truth — skip anything already recorded there as applied to. Cross-check each remaining posting against my real background and give me a ranked table: Job Title | Company | Source/Platform | Posted | Estimated Match % | Why | URL. Don't tailor a resume or apply to anything yet — just find and list what's genuinely out there so I can pick which ones are worth pursuing.`,
+          note: "Needs an Apify MCP connector added via ChatGPT's Developer Mode — a remote server, so unlike the platform-specific prompts this doesn't need the desktop app's built-in browser for the search itself; it still needs that browser to read your real Devcard profile and application history at localhost:6366.",
+        },
+      },
+    ],
+  },
+  {
     title: "Daily job hunt — Naukri, Hirist, Wellfound",
     prompts: [
       {

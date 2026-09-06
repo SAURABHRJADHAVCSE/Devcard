@@ -617,6 +617,32 @@ hands you the tailored PDFs to apply yourself)*
 > If a required browser or site is unavailable, complete every earlier stage that is still
 > possible, state the precise blocker, and hand me the prepared PDF and URL."
 
+**Broad internet-wide job search via Apify** *(search only, not tied to your registered
+platforms — casts a wide net across the open internet, then hands you a list to review; doesn't
+tailor a resume or apply to anything itself)*
+> "Use the Apify job-search tool to crawl the wider internet for fresh [job title(s)] openings
+> posted in the last [N] days — not limited to my registered platforms, cast a wide net (other
+> job boards, aggregators, company career pages, whatever the tool covers). Check
+> list_applications and skip anything (same company + role, or same URL) I've already applied
+> to. Cross-check each remaining posting against my Devcard profile (get_full_profile) and give
+> me a ranked table: Job Title | Company | Source/Platform | Posted | Estimated Match % | Why |
+> URL. Don't tailor a resume or apply to anything yet — just find and list what's genuinely out
+> there so I can pick which ones are worth pursuing."
+>
+> **ChatGPT version** *(needs an Apify MCP connector added via ChatGPT's Developer Mode — a
+> remote server, so unlike the platform-specific prompts above this doesn't need the desktop
+> app's built-in browser for the search itself; it still needs that browser to read your real
+> Devcard profile and application history at `localhost:6366`)*:
+> "Use the Apify job-search tool to crawl the wider internet for fresh [job title(s)] openings
+> posted in the last [N] days — not limited to any one platform, cast a wide net (job boards,
+> aggregators, company career pages, whatever the tool covers). Use ChatGPT's built-in browser
+> to open http://localhost:6366 and read my Devcard profile and Applications tab as the source
+> of truth — skip anything already recorded there as applied to. Cross-check each remaining
+> posting against my real background and give me a ranked table: Job Title | Company |
+> Source/Platform | Posted | Estimated Match % | Why | URL. Don't tailor a resume or apply to
+> anything yet — just find and list what's genuinely out there so I can pick which ones are
+> worth pursuing."
+
 **Daily job hunt — Naukri, Hirist, Wellfound** *(a ready-to-fire, fixed-scope version of the
 prompt above — no brackets to fill in, run it as-is)*
 > "Run today's job hunt: pull 10 fresh openings each from Naukri, Hirist, and Wellfound
